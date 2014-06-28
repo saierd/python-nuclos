@@ -1,4 +1,6 @@
+import collections
 import configparser
+import functools
 import json
 import locale
 import logging
@@ -6,6 +8,8 @@ import urllib.request
 
 # TODO: allow logging to a file (specified in settings file).
 # TODO: allow changing the log level. Remove the debug option then.
+# TODO: turn on logging with date and time.
+logging.basicConfig(level=logging.DEBUG)
 
 
 class NuclosSettings:
@@ -47,6 +51,33 @@ class NuclosSettings:
         return self.config.getboolean("nuclos", "handle_http_errors", fallback=True)
 
 
+class Cached:
+    cached = []
+
+    def __init__(self, f):
+        self.f = f
+        self.cache = {}
+        Cached.cached.append(self)
+
+    @classmethod
+    def clear(cls):
+        for cache in Cached.cached:
+            cache.clear_cache()
+
+    def clear_cache(self):
+        self.cache = {}
+
+    def __call__(self, *args):
+        if not isinstance(args, collections.Hashable):
+            return self.f(*args)
+        if not args in self.cache:
+            self.cache[args] = self.f(*args)
+        return self.cache[args]
+
+    def __get__(self, instance, _):
+        return functools.partial(self.__call__, instance)
+
+
 class NuclosException(Exception):
     pass
 
@@ -61,13 +92,34 @@ class NuclosAPI:
         settings = NuclosSettings(filename)
         return cls(settings)
 
+    @property
+    @Cached
+    def version(self):
+        return self._request("version", auto_login=False, json_answer=False)
+
+    def require_version(self, *version):
+        """
+        Check whether the version of the Nuclos server is at least the given one.
+
+        :param version: A list of numbers specifying the required version.
+        :return: True if the server version is high enough, False otherwise.
+        """
+        version_string = self.version.split(" ")[0]
+        version_parts = [int(x) for x in version_string.split(".")]
+
+        for v, req in zip(version_parts, version):
+            if v < req:
+                return False
+        return True
+
     def login(self):
         """
         Log in to the Nuclos server.
 
         :return: True is successful, False otherwise.
         """
-        # TODO: Check whether nuclos version >= 4.0, exception if not.
+        if not self.require_version(4, 3):
+            raise NuclosException("Need at least Nuclos 4.3 to use this version of the REST API.")
 
         login_data = {
             "username": self.settings.username,
@@ -79,16 +131,35 @@ class NuclosAPI:
         answer = self._request("login", login_data, auto_login=False, json_answer=False)
         if answer:
             self.session_id = answer
-            logging.info("Successfully logged in to the Nuclos server.")
+            logging.info("Logged in to the Nuclos server.")
             return True
         return False
 
     def logout(self):
-        pass
+        """
+        Log out from the Nuclos server.
+
+        :return: True if successful, False otherwise.
+        """
+        if not self.session_id:
+            return True
+
+        answer = self._request("logout")
+        if not answer is None:
+            self.session_id = None
+            logging.info("Logged out from the Nuclos server.")
+            return True
+        return False
 
     def reconnect(self):
+        """
+        Reconnect to the server. This will also clear caches.
+        """
         self.logout()
-        # TODO: clear caches.
+        Cached.clear()
+
+    def get_entity(self):
+        pass
 
     def _request(self, path, data=None, auto_login=True, json_answer=True):
         """
@@ -101,7 +172,8 @@ class NuclosAPI:
         :return: The answer of the server. None in case of an error.
         """
         if not self.session_id and auto_login:
-            self.login()
+            if not self.login():
+                return None
 
         url = self._build_url(path)
         request = urllib.request.Request(url)
@@ -132,18 +204,23 @@ class NuclosAPI:
             logging.error("HTTP Error {}: {}".format(e.code, e.reason))
             if not self.settings.handle_http_errors:
                 raise e
+            return None
 
     def _build_url(self, path):
         return "http://{}:{}/{}/rest/{}".format(self.settings.ip, self.settings.port, self.settings.instance, path)
 
 
-class AbstractNuclosEntity:
+class Entity:
     pass
 
 
-class NuclosEntity(AbstractNuclosEntity):
+class AbstractEntityInstance:
     pass
 
 
-class NuclosEntityProxy(AbstractNuclosEntity):
+class EntityInstance(AbstractEntityInstance):
+    pass
+
+
+class EntityProxy(AbstractEntityInstance):
     pass
