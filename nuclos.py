@@ -6,16 +6,23 @@ import locale
 import logging
 import urllib.request
 
-# TODO: allow logging to a file (specified in settings file).
-# TODO: allow changing the log level. Remove the debug option then.
-# TODO: turn on logging with date and time.
-logging.basicConfig(level=logging.DEBUG)
-
 
 class NuclosSettings:
     def __init__(self, filename):
-        self.config = configparser.ConfigParser()
+        self.config = configparser.ConfigParser(interpolation=None)
         self.config.read(filename)
+
+        log_level_config = self.config.get("nuclos", "log_level", fallback="INFO").upper()
+        log_level = getattr(logging, log_level_config, None)
+        if not isinstance(log_level, int):
+            raise ValueError("Unknown log level '{}'.".format(log_level_config))
+        log_format = self.config.get("nuclos", "log_format", fallback="%(levelname)s %(asctime)s\t%(message)s")
+        log_format = bytes(log_format, "utf-8").decode("unicode_escape")
+        date_format = self.config.get("nuclos", "log_date_format", fallback="%d.%m.%Y %H:%M:%S")
+        date_format = bytes(date_format, "utf-8").decode("unicode_escape")
+        log_file = self.config.get("nuclos", "log_file", fallback="")
+
+        logging.basicConfig(filename=log_file, datefmt=date_format, format=log_format, level=log_level)
 
     @property
     def ip(self):
@@ -41,10 +48,6 @@ class NuclosSettings:
     def locale(self):
         default_locale = locale.getlocale()[0]
         return self.config.get("nuclos", "locale", fallback=default_locale)
-
-    @property
-    def debug(self):
-        return self.config.getboolean("nuclos", "debug", fallback=False)
 
     @property
     def handle_http_errors(self):
@@ -158,7 +161,7 @@ class NuclosAPI:
         self.logout()
         Cached.clear()
 
-    def get_entity(self):
+    def get_entity(self, name):
         pass
 
     def _request(self, path, data=None, auto_login=True, json_answer=True):
