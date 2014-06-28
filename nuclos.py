@@ -100,6 +100,11 @@ class NuclosAPI:
     def version(self):
         return self._request("version", auto_login=False, json_answer=False)
 
+    @property
+    @Cached
+    def db_version(self):
+        return self._request("dbversion", auto_login=False, json_answer=False)
+
     def require_version(self, *version):
         """
         Check whether the version of the Nuclos server is at least the given one.
