@@ -85,6 +85,10 @@ class NuclosException(Exception):
     pass
 
 
+class NuclosVersionException(NuclosException):
+    pass
+
+
 class NuclosAPI:
     def __init__(self, settings):
         self.settings = settings
@@ -127,7 +131,7 @@ class NuclosAPI:
         :return: True is successful, False otherwise.
         """
         if not self.require_version(4, 3):
-            raise NuclosException("Need at least Nuclos 4.3 to use this version of the REST API.")
+            raise NuclosVersionException("Need at least Nuclos 4.3 to use this version of the REST API.")
 
         login_data = {
             "username": self.settings.username,
@@ -191,7 +195,7 @@ class NuclosAPI:
         if self.session_id:
             request.add_header("sessionid", self.session_id)
 
-        logging.debug("Sending request: '{}' with data '{}'.".format(request.get_full_url(), request.data))
+        logging.debug("Request: '{}' with data '{}'.".format(request.get_full_url(), request.data))
         try:
             result = urllib.request.urlopen(request)
             answer = result.read().decode()
