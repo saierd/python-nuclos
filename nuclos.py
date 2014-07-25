@@ -1,4 +1,3 @@
-from email.quoprimime import body_check
 import sys
 
 if sys.version_info[0] != 3 or sys.version_info[1] < 3:
@@ -189,7 +188,7 @@ class NuclosAPI:
     @Cached
     def _get_bo_meta_id(self, name):
         """
-        Get the meta id of a business object by its name.
+        Get the meta id of a business object by its name. This method is not case sensitive.
 
         :param name: The name of the business object to find.
         :return: The meta id of this business object. None if it does not exist.
@@ -201,6 +200,7 @@ class NuclosAPI:
                 return bo["bo_meta_id"]
         return None
 
+    @Cached
     def _bo_meta_id_exists(self, bo_meta_id):
         """
         Check whether a business object with the given meta id exists.
@@ -235,6 +235,20 @@ class NuclosAPI:
         if bo_meta_id:
             return self.get_business_object(bo_meta_id)
         return None
+
+    def __getattr__(self, name):
+        bo = self.get_business_object_by_name(name)
+        if bo:
+            return bo
+        raise AttributeError("Unknown business object '{}'.".format(name))
+
+    def __getitem__(self, name):
+        if isinstance(name, str):
+            bo = self.get_business_object_by_name(name)
+            if bo:
+                return bo
+            raise IndexError("Unknown business object '{}'.".format(name))
+        raise TypeError("Invalid argument type.")
 
     def request(self, path, data=None, method=None, auto_login=True, json_answer=True):
         """
