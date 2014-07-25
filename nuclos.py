@@ -161,7 +161,7 @@ class NuclosAPI:
         if not self.session_id:
             return True
 
-        answer = self._request("logout")
+        answer = self._request("", method="DELETE", json_answer=False)
         if not answer is None:
             self.session_id = None
             logging.info("Logged out from the Nuclos server.")
