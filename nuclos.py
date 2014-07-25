@@ -1,3 +1,9 @@
+"""
+Copyright (c) 2014 Daniel Saier
+
+This project is licensed under the terms of the MIT license. See the LICENSE file.
+"""
+
 import sys
 
 if sys.version_info[0] != 3 or sys.version_info[1] < 3:
@@ -198,6 +204,10 @@ class NuclosAPI:
         for bo in self._business_objects:
             if bo["name"].lower() == name:
                 return bo["bo_meta_id"]
+
+        # Allow replacing spaces in the name by underscores.
+        if "_" in name:
+            return self._get_bo_meta_id(name.replace("_", " "))
         return None
 
     @Cached
@@ -299,7 +309,7 @@ class NuclosAPI:
                 logging.info("Unauthorized. Trying to log in again.")
                 self.session_id = None
                 if self.login():
-                    return self.request(path, data, auto_login=False, json_answer=json_answer)
+                    return self.request(path, data=data, method=method, auto_login=False, json_answer=json_answer)
             logging.error("HTTP Error {}: {}".format(e.code, e.reason))
             if self.settings.handle_http_errors:
                 return None
@@ -320,13 +330,13 @@ class BusinessObject:
         return self.nuclos.request("bo/meta/{}".format(self.bo_meta_id))
 
 
-class AbstractEntityInstance:
+class AbstractBOInstance:
     pass
 
 
-class EntityInstance(AbstractEntityInstance):
+class BOInstance(AbstractBOInstance):
     pass
 
 
-class EntityProxy(AbstractEntityInstance):
+class BOProxy(AbstractBOInstance):
     pass
