@@ -183,7 +183,7 @@ class NuclosAPI:
 
         :return: See the Nuclos bometalist response.
         """
-        return self.request("/bo")
+        return self.request("bo")
 
     @Cached
     def _get_bo_meta_id(self, name):
@@ -213,6 +213,7 @@ class NuclosAPI:
                 return True
         return False
 
+    @Cached
     def get_business_object(self, bo_meta_id):
         """
         Get a business object by its meta id.
@@ -272,7 +273,7 @@ class NuclosAPI:
             request.add_header("Content-Type", "application/json")
         if method:
             request.method = method
-        if method and request.data and method != "POST":
+        if method and request.data and not method in ["POST", "PUT"]:
             logging.warning("Overriding the POST method while sending data!")
         if self.session_id:
             request.add_header("sessionid", self.session_id)
@@ -312,6 +313,11 @@ class BusinessObject:
     def __init__(self, nuclos, bo_meta_id):
         self.nuclos = nuclos
         self.bo_meta_id = bo_meta_id
+
+    @property
+    @Cached
+    def meta(self):
+        return self.nuclos.request("bo/meta/{}".format(self.bo_meta_id))
 
 
 class AbstractEntityInstance:
