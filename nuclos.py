@@ -140,7 +140,7 @@ class NuclosAPI:
         }
 
         # TODO: This might change soon. Response won't be a string then but a JSON object containing the session id.
-        answer = self._request("login", login_data, auto_login=False, json_answer=False)
+        answer = self._request("", login_data, auto_login=False, json_answer=False)
         if answer:
             self.session_id = answer
             logging.info("Logged in to the Nuclos server.")
