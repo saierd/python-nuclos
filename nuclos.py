@@ -101,19 +101,19 @@ class NuclosAPI:
         self.session_id = None
 
     @classmethod
-    def from_ini_file(cls, filename):
+    def from_settings_file(cls, filename):
         settings = NuclosSettings(filename)
         return cls(settings)
 
     @property
     @Cached
     def version(self):
-        return self._request("version", auto_login=False, json_answer=False)
+        return self.request("version", auto_login=False, json_answer=False)
 
     @property
     @Cached
     def db_version(self):
-        return self._request("dbversion", auto_login=False, json_answer=False)
+        return self.request("dbversion", auto_login=False, json_answer=False)
 
     def require_version(self, *version):
         """
@@ -145,7 +145,7 @@ class NuclosAPI:
             "locale": self.settings.locale
         }
 
-        answer = self._request("", login_data, auto_login=False)
+        answer = self.request("", login_data, auto_login=False)
         if answer:
             self.session_id = answer["session_id"]
             logging.info("Logged in to the Nuclos server.")
@@ -161,7 +161,7 @@ class NuclosAPI:
         if not self.session_id:
             return True
 
-        answer = self._request("", method="DELETE", json_answer=False)
+        answer = self.request("", method="DELETE", json_answer=False)
         if not answer is None:
             self.session_id = None
             logging.info("Logged out from the Nuclos server.")
@@ -178,14 +178,14 @@ class NuclosAPI:
     def get_entity(self, name):
         pass
 
-    def _request(self, path, data=None, method=None, auto_login=True, json_answer=True):
+    def request(self, path, data=None, method=None, auto_login=True, json_answer=True):
         """
         Send a request to the Nuclos server.
 
         :param path: The path to open.
         :param data: The data to add. If this is given the request will automatically be a POST request.
-        :param method: The HTTP method to use. If not set this will be GET or POST, depending on data.
-        :param auto_login: Try to log in automatically.
+        :param method: The HTTP method to use. If not set this will be GET or POST, depending on the data.
+        :param auto_login: Try to log in automatically in case of a 401 error.
         :param json_answer: Parse the servers answer as JSON.
         :return: The answer of the server. None in case of an error.
         """
@@ -200,6 +200,8 @@ class NuclosAPI:
             request.add_header("Content-Type", "application/json")
         if method:
             request.method = method
+        if method and request.data and method != "POST":
+            logging.warning("Overriding the POST method while sending data!")
         if self.session_id:
             request.add_header("sessionid", self.session_id)
 
@@ -224,11 +226,11 @@ class NuclosAPI:
                 logging.info("Unauthorized. Trying to log in again.")
                 self.session_id = None
                 if self.login():
-                    return self._request(path, data, auto_login=False, json_answer=json_answer)
+                    return self.request(path, data, auto_login=False, json_answer=json_answer)
             logging.error("HTTP Error {}: {}".format(e.code, e.reason))
-            if not self.settings.handle_http_errors:
-                raise e
-            return None
+            if self.settings.handle_http_errors:
+                return None
+            raise e
 
     def _build_url(self, path):
         return "http://{}:{}/{}/rest/{}".format(self.settings.ip, self.settings.port, self.settings.instance, path)
