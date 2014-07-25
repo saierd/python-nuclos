@@ -139,10 +139,9 @@ class NuclosAPI:
             "locale": self.settings.locale
         }
 
-        # TODO: This might change soon. Response won't be a string then but a JSON object containing the session id.
-        answer = self._request("", login_data, auto_login=False, json_answer=False)
+        answer = self._request("", login_data, auto_login=False)
         if answer:
-            self.session_id = answer
+            self.session_id = answer["session_id"]
             logging.info("Logged in to the Nuclos server.")
             return True
         return False
