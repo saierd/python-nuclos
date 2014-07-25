@@ -1,3 +1,9 @@
+import sys
+
+if sys.version_info[0] != 3 or sys.version_info[1] < 3:
+    print("This library needs at least Python 3.3")
+    sys.exit(1)
+
 import collections
 import configparser
 import functools
@@ -172,12 +178,13 @@ class NuclosAPI:
     def get_entity(self, name):
         pass
 
-    def _request(self, path, data=None, auto_login=True, json_answer=True):
+    def _request(self, path, data=None, method=None, auto_login=True, json_answer=True):
         """
         Send a request to the Nuclos server.
 
         :param path: The path to open.
         :param data: The data to add. If this is given the request will automatically be a POST request.
+        :param method: The HTTP method to use. If not set this will be GET or POST, depending on data.
         :param auto_login: Try to log in automatically.
         :param json_answer: Parse the servers answer as JSON.
         :return: The answer of the server. None in case of an error.
@@ -191,10 +198,15 @@ class NuclosAPI:
         if data:
             request.data = json.dumps(data).encode("utf-8")
             request.add_header("Content-Type", "application/json")
+        if method:
+            request.method = method
         if self.session_id:
             request.add_header("sessionid", self.session_id)
 
-        logging.debug("Request: '{}' with data '{}'.".format(request.get_full_url(), request.data))
+        logging.debug("Sending {} request to '{}'.".format(request.get_method(), request.get_full_url()))
+        if request.data:
+            logging.debug("Data: '{}'.".format(request.data))
+
         try:
             result = urllib.request.urlopen(request)
             answer = result.read().decode()
