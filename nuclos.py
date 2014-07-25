@@ -203,14 +203,15 @@ class NuclosAPI:
         if self.session_id:
             request.add_header("sessionid", self.session_id)
 
-        logging.debug("Sending {} request to '{}'.".format(request.get_method(), request.get_full_url()))
+        logging.debug("Sending {} request to {}.".format(request.get_method(), request.get_full_url()))
         if request.data:
-            logging.debug("Data: '{}'.".format(request.data))
+            logging.debug("Sending data {}.".format(request.data))
 
         try:
             result = urllib.request.urlopen(request)
             answer = result.read().decode()
-            logging.debug("Answer: {}".format(answer))
+            if answer:
+                logging.debug("Received answer {}".format(answer))
             if not json_answer:
                 return answer
             try:
