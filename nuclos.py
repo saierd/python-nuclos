@@ -1,3 +1,4 @@
+from email.quoprimime import body_check
 import sys
 
 if sys.version_info[0] != 3 or sys.version_info[1] < 3:
@@ -175,8 +176,65 @@ class NuclosAPI:
         self.logout()
         Cached.clear()
 
-    def get_entity(self, name):
-        pass
+    @property
+    @Cached
+    def _business_objects(self):
+        """
+        Get a list of all available business objects.
+
+        :return: See the Nuclos bometalist response.
+        """
+        return self.request("/bo")
+
+    @Cached
+    def _get_bo_meta_id(self, name):
+        """
+        Get the meta id of a business object by its name.
+
+        :param name: The name of the business object to find.
+        :return: The meta id of this business object. None if it does not exist.
+        """
+        name = name.lower()
+
+        for bo in self._business_objects:
+            if bo["name"].lower() == name:
+                return bo["bo_meta_id"]
+        return None
+
+    def _bo_meta_id_exists(self, bo_meta_id):
+        """
+        Check whether a business object with the given meta id exists.
+
+        :param bo_meta_id: The meta id to search for.
+        :return: True if there is a business object with the given meta id. False otherwise.
+        """
+        for bo in self._business_objects:
+            if bo["bo_meta_id"] == bo_meta_id:
+                return True
+        return False
+
+    def get_business_object(self, bo_meta_id):
+        """
+        Get a business object by its meta id.
+
+        :param bo_meta_id: The meta id of the business object to find.
+        :return: A BusinessObject object. None if the business object does not exist.
+        """
+        if self._bo_meta_id_exists(bo_meta_id):
+            return BusinessObject(self, bo_meta_id)
+        return None
+
+    def get_business_object_by_name(self, name):
+        """
+        Get a business object by its name.
+
+        :param name: The name of the business object to find.
+        :return: A BusinessObject object. None if the business object does not exist.
+        """
+        bo_meta_id = self._get_bo_meta_id(name)
+        if bo_meta_id:
+            return self.get_business_object(bo_meta_id)
+        return None
 
     def request(self, path, data=None, method=None, auto_login=True, json_answer=True):
         """
@@ -236,8 +294,10 @@ class NuclosAPI:
         return "http://{}:{}/{}/rest/{}".format(self.settings.ip, self.settings.port, self.settings.instance, path)
 
 
-class Entity:
-    pass
+class BusinessObject:
+    def __init__(self, nuclos, bo_meta_id):
+        self.nuclos = nuclos
+        self.bo_meta_id = bo_meta_id
 
 
 class AbstractEntityInstance:
