@@ -329,7 +329,10 @@ class BusinessObjectMeta:
         self._nuclos = nuclos
         self.bo_meta_id = bo_meta_id
 
-        self._data = self._nuclos.request("bo/meta/{}".format(self.bo_meta_id))
+    @property
+    @Cached
+    def _data(self):
+        return self._nuclos.request("bo/meta/{}".format(self.bo_meta_id))
 
     @property
     def name(self):
@@ -432,22 +435,31 @@ class AttributeMeta:
 
 class BusinessObject:
     def __init__(self, nuclos, bo_meta_id):
-        self.nuclos = nuclos
+        self._nuclos = nuclos
         self.bo_meta_id = bo_meta_id
 
     @property
     @Cached
     def meta(self):
-        return BusinessObjectMeta(self.nuclos, self.bo_meta_id)
+        return BusinessObjectMeta(self._nuclos, self.bo_meta_id)
+
+    def list(self):
+        data = self._nuclos.request("bo/{}".format(self.bo_meta_id))
+
+        return [BusinessObjectInstance(self._nuclos, self, bo["bo_id"]) for bo in data["bos"]]
 
 
-class _BOInstance:
-    pass
+class BusinessObjectInstance:
+    def __init__(self, nuclos, business_object, bo_id):
+        self._nuclos = nuclos
+        self._business_object = business_object
+        self.bo_id = bo_id
 
+    @property
+    @Cached
+    def _data(self):
+        return self._nuclos.request("bo/{}/{}".format(self._business_object.bo_meta_id, self.bo_id))
 
-class BOInstance(_BOInstance):
-    pass
-
-
-class BOProxy(_BOInstance):
-    pass
+    @property
+    def title(self):
+        return self._data
