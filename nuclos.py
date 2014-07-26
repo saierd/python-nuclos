@@ -324,7 +324,7 @@ class NuclosAPI:
         return "http://{}:{}/{}/rest/{}".format(self.settings.ip, self.settings.port, self.settings.instance, path)
 
 
-class BOMeta:
+class BusinessObjectMeta:
     def __init__(self, nuclos, bo_meta_id):
         self._nuclos = nuclos
         self.bo_meta_id = bo_meta_id
@@ -350,7 +350,7 @@ class BOMeta:
     @property
     @Cached
     def attributes(self):
-        return [BOMetaAttribute(a) for a in self._data["attributes"].values()]
+        return [AttributeMeta(a) for a in self._data["attributes"].values()]
 
     def get_attribute(self, bo_attr_id):
         """
@@ -397,7 +397,7 @@ class BOMeta:
         raise TypeError("Invalid argument type.")
 
 
-class BOMetaAttribute:
+class AttributeMeta:
     def __init__(self, data):
         self._data = data
 
@@ -438,7 +438,7 @@ class BusinessObject:
     @property
     @Cached
     def meta(self):
-        return BOMeta(self.nuclos, self.bo_meta_id)
+        return BusinessObjectMeta(self.nuclos, self.bo_meta_id)
 
 
 class _BOInstance:
