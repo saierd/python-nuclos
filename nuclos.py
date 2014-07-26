@@ -261,6 +261,11 @@ class NuclosAPI:
             raise IndexError("Unknown business object '{}'.".format(name))
         raise TypeError("Invalid argument type.")
 
+    @property
+    @Cached
+    def business_objects(self):
+        return [self.get_business_object(bo["bo_meta_id"]) for bo in self._business_objects]
+
     def request(self, path, data=None, method=None, auto_login=True, json_answer=True):
         """
         Send a request to the Nuclos server.
@@ -319,6 +324,55 @@ class NuclosAPI:
         return "http://{}:{}/{}/rest/{}".format(self.settings.ip, self.settings.port, self.settings.instance, path)
 
 
+class BOMeta:
+    def __init__(self, nuclos, bo_meta_id):
+        self.nuclos = nuclos
+        self.bo_meta_id = bo_meta_id
+        self.data = self.nuclos.request("bo/meta/{}".format(self.bo_meta_id))
+
+    @property
+    def name(self):
+        return self.data["name"]
+
+    @property
+    def can_update(self):
+        return self.data["update"]
+
+    @property
+    def can_insert(self):
+        return self.data["insert"]
+
+    @property
+    def can_delete(self):
+        return self.data["delete"]
+
+    @property
+    @Cached
+    def attributes(self):
+        return [BOMetaAttribute(a) for a in self.data["attributes"]]
+
+
+class BOMetaAttribute:
+    def __init__(self, data):
+        self.data = data
+
+    @property
+    def name(self):
+        return self.data["name"]
+
+    @property
+    def bo_attr_id(self):
+        return self.data["bo_attr_id"]
+
+    @property
+    def writeable(self):
+        return not self.data["readonly"]
+
+    @property
+    def is_reference(self):
+        return self.data["reference"]
+
+
 class BusinessObject:
     def __init__(self, nuclos, bo_meta_id):
         self.nuclos = nuclos
@@ -327,16 +381,16 @@ class BusinessObject:
     @property
     @Cached
     def meta(self):
-        return self.nuclos.request("bo/meta/{}".format(self.bo_meta_id))
+        return BOMeta(self.nuclos, self.bo_meta_id)
 
 
-class AbstractBOInstance:
+class _BOInstance:
     pass
 
 
-class BOInstance(AbstractBOInstance):
+class BOInstance(_BOInstance):
     pass
 
 
-class BOProxy(AbstractBOInstance):
+class BOProxy(_BOInstance):
     pass
