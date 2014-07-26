@@ -414,15 +414,15 @@ class AttributeMeta:
         return self._data["type"]
 
     @property
-    def writeable(self):
+    def is_writeable(self):
         return not self._data["readonly"]
 
     @property
-    def nullable(self):
+    def is_nullable(self):
         return self._data["nullable"]
 
     @property
-    def unique(self):
+    def is_unique(self):
         return self._data["unique"]
 
     @property
