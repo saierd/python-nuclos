@@ -276,6 +276,7 @@ class NuclosAPI:
         :param auto_login: Try to log in automatically in case of a 401 error.
         :param json_answer: Parse the servers answer as JSON.
         :return: The answer of the server. None in case of an error.
+        :raises: URLError in case of an HTTP error. Returns None instead if the 'handle_http_errors' option is set.
         """
         if not self.session_id and auto_login:
             if not self.login():
@@ -463,12 +464,27 @@ class BusinessObjectInstance:
 
     @property
     @Cached
+    def _url(self):
+        return "bo/{}/{}".format(self._business_object.bo_meta_id, self.bo_id)
+
+    @property
+    @Cached
     def _data(self):
-        return self._nuclos.request("bo/{}/{}".format(self._business_object.bo_meta_id, self.bo_id))
+        return self._nuclos.request(self._url)
 
     @property
     def title(self):
         return self._data["_title"]
+
+    def delete(self):
+        """
+        Delete this instance.
+
+        :return: True is successful. False otherwise.
+        """
+        # TODO: Test.
+        # TODO: Prevent saving a deleted instance.
+        return not self._nuclos.request(self._url, method="DELETE") is None
 
     def get_attribute(self, bo_attr_id):
         """
