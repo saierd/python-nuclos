@@ -7,7 +7,7 @@ This project is licensed under the terms of the MIT license. See the LICENSE fil
 import sys
 
 if sys.version_info[0] != 3 or sys.version_info[1] < 3:
-    print("This library needs at least Python 3.3")
+    print("This library needs at least Python 3.3!")
     sys.exit(1)
 
 import collections
@@ -444,6 +444,12 @@ class BusinessObject:
         return BusinessObjectMeta(self._nuclos, self.bo_meta_id)
 
     def list(self):
+        """
+        Get a list of instances for this business object.
+
+        :return: A list of BusinessObjectInstance objects.
+        """
+        # TODO: make further instances accessible.
         data = self._nuclos.request("bo/{}".format(self.bo_meta_id))
 
         return [BusinessObjectInstance(self._nuclos, self, bo["bo_id"]) for bo in data["bos"]]
@@ -462,4 +468,37 @@ class BusinessObjectInstance:
 
     @property
     def title(self):
-        return self._data
+        return self._data["_title"]
+
+    def get_attribute(self, bo_attr_id):
+        """
+        Get the value of an attribute.
+
+        :param bo_attr_id: The attribute id to get the value of.
+        :return: The attributes value.
+        :raise: AttributeError if the attribute does not exist.
+        """
+        if bo_attr_id in self._data["bo_values"]:
+            return self._data["bo_values"][bo_attr_id]
+        raise AttributeError("Unknown attribute '{}'.".format(bo_attr_id))
+
+    def get_attribute_by_name(self, name):
+        """
+        Get the value of an attribute by its name.
+
+        :param name: The name of the attribute to search.
+        :return: The attribute value.
+        :raise: AttributeError if the attribute does not exist.
+        """
+        attr = self._business_object.meta.get_attribute_by_name(name)
+        if attr:
+            return self.get_attribute(attr.bo_attr_id)
+        raise AttributeError("Unknown attribute '{}'.".format(name))
+
+    def __getattr__(self, name):
+        return self.get_attribute_by_name(name)
+
+    def __getitem__(self, name):
+        if isinstance(name, str):
+            return self.get_attribute_by_name(name)
+        raise TypeError("Invalid argument type.")
