@@ -350,7 +350,51 @@ class BOMeta:
     @property
     @Cached
     def attributes(self):
-        return [BOMetaAttribute(a) for a in self._data["attributes"]]
+        return [BOMetaAttribute(a) for a in self._data["attributes"].values()]
+
+    def get_attribute(self, bo_attr_id):
+        """
+        Find the metadata for an attribute of this business object.
+
+        :param bo_attr_id: The attribute id to find.
+        :return: A BOMetaAttribute object. None if the attribute does not exist.
+        """
+        for attr in self.attributes:
+            if attr.bo_attr_id == bo_attr_id:
+                return attr
+        return None
+
+    def get_attribute_by_name(self, name):
+        """
+        Find the metadata for an attribute of this business object by its name.
+
+        :param name: The name to search for.
+        :return: A BOMetaAttribute object. None if the attribute does not exist.
+        """
+        name = name.lower()
+
+        for attr in self.attributes:
+            if attr.name.lower() == name:
+                return attr
+
+        # Allow replacing spaces in attribute names by underscores.
+        if "_" in name:
+            return self.get_attribute_by_name(name.replace("_", " "))
+        return None
+
+    def __getattr__(self, name):
+        attr = self.get_attribute_by_name(name)
+        if attr:
+            return attr
+        raise AttributeError("Unknown attribute '{}'.".format(name))
+
+    def __getitem__(self, name):
+        if isinstance(name, str):
+            attr = self.get_attribute_by_name(name)
+            if attr:
+                return attr
+            raise IndexError("Unknown attribute '{}'.".format(name))
+        raise TypeError("Invalid argument type.")
 
 
 class BOMetaAttribute:
