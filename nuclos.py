@@ -326,51 +326,64 @@ class NuclosAPI:
 
 class BOMeta:
     def __init__(self, nuclos, bo_meta_id):
-        self.nuclos = nuclos
+        self._nuclos = nuclos
         self.bo_meta_id = bo_meta_id
-        self.data = self.nuclos.request("bo/meta/{}".format(self.bo_meta_id))
+
+        self._data = self._nuclos.request("bo/meta/{}".format(self.bo_meta_id))
 
     @property
     def name(self):
-        return self.data["name"]
+        return self._data["name"]
 
     @property
     def can_update(self):
-        return self.data["update"]
+        return self._data["update"]
 
     @property
     def can_insert(self):
-        return self.data["insert"]
+        return self._data["insert"]
 
     @property
     def can_delete(self):
-        return self.data["delete"]
+        return self._data["delete"]
 
     @property
     @Cached
     def attributes(self):
-        return [BOMetaAttribute(a) for a in self.data["attributes"]]
+        return [BOMetaAttribute(a) for a in self._data["attributes"]]
 
 
 class BOMetaAttribute:
     def __init__(self, data):
-        self.data = data
+        self._data = data
 
     @property
     def name(self):
-        return self.data["name"]
+        return self._data["name"]
 
     @property
     def bo_attr_id(self):
-        return self.data["bo_attr_id"]
+        return self._data["bo_attr_id"]
+
+    @property
+    def type(self):
+        return self._data["type"]
 
     @property
     def writeable(self):
-        return not self.data["readonly"]
+        return not self._data["readonly"]
+
+    @property
+    def nullable(self):
+        return self._data["nullable"]
+
+    @property
+    def unique(self):
+        return self._data["unique"]
 
     @property
     def is_reference(self):
-        return self.data["reference"]
+        return self._data["reference"]
 
 
 class BusinessObject:
