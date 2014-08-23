@@ -4,6 +4,8 @@ Copyright (c) 2014 Daniel Saier
 This project is licensed under the terms of the MIT license. See the LICENSE file.
 """
 
+# TODO: infinite loop if there is no route to host.
+
 import sys
 
 if sys.version_info[0] != 3 or sys.version_info[1] < 3:
@@ -101,6 +103,11 @@ class NuclosVersionException(NuclosException):
     pass
 
 
+class NuclosAuthenticationException(NuclosException):
+    def __init__(self):
+        super().__init__("Authentication failed!")
+
+
 class NuclosAPI:
     def __init__(self, settings):
         self.settings = settings
@@ -140,10 +147,10 @@ class NuclosAPI:
         """
         Log in to the Nuclos server.
 
-        :return: True is successful, False otherwise.
+        :raises: NuclosAuthenticationException if the login was not successful.
         """
         if not self.require_version(4, 3):
-            raise NuclosVersionException("Need at least Nuclos 4.3 to use this version of the REST API.")
+            raise NuclosVersionException("You need at least Nuclos 4.3 to use this version of the REST API.")
 
         login_data = {
             "username": self.settings.username,
@@ -155,8 +162,8 @@ class NuclosAPI:
         if answer:
             self.session_id = answer["session_id"]
             logging.info("Logged in to the Nuclos server.")
-            return True
-        return False
+        else:
+            raise NuclosAuthenticationException()
 
     def logout(self):
         """
@@ -201,9 +208,10 @@ class NuclosAPI:
         """
         name = name.lower()
 
-        for bo in self._business_objects:
-            if bo["name"].lower() == name:
-                return bo["bo_meta_id"]
+        if self._business_objects:
+            for bo in self._business_objects:
+                if bo["name"].lower() == name:
+                    return bo["bo_meta_id"]
 
         # Allow replacing spaces in the name by underscores.
         if "_" in name:
@@ -218,9 +226,10 @@ class NuclosAPI:
         :param bo_meta_id: The meta id to search for.
         :return: True if there is a business object with the given meta id. False otherwise.
         """
-        for bo in self._business_objects:
-            if bo["bo_meta_id"] == bo_meta_id:
-                return True
+        if self._business_objects:
+            for bo in self._business_objects:
+                if bo["bo_meta_id"] == bo_meta_id:
+                    return True
         return False
 
     @Cached
@@ -276,11 +285,10 @@ class NuclosAPI:
         :param auto_login: Try to log in automatically in case of a 401 error.
         :param json_answer: Parse the servers answer as JSON.
         :return: The answer of the server. None in case of an error.
-        :raises: URLError in case of an HTTP error. Returns None instead if the 'handle_http_errors' option is set.
+        :raise: URLError in case of an HTTP error. Returns None instead if the 'handle_http_errors' option is set.
         """
         if not self.session_id and auto_login:
-            if not self.login():
-                return None
+            self.login()
 
         url = self._build_url(path)
         request = urllib.request.Request(url)
