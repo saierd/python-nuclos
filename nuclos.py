@@ -4,8 +4,6 @@ Copyright (c) 2014 Daniel Saier
 This project is licensed under the terms of the MIT license. See the LICENSE file.
 """
 
-# TODO: infinite loop if there is no route to host.
-
 import sys
 
 if sys.version_info[0] != 3 or sys.version_info[1] < 3:
@@ -147,6 +145,7 @@ class NuclosAPI:
         """
         Log in to the Nuclos server.
 
+        :raises: NuclosVersionException if the server version is too low to use the API.
         :raises: NuclosAuthenticationException if the login was not successful.
         """
         if not self.require_version(4, 3):
@@ -318,12 +317,12 @@ class NuclosAPI:
             except ValueError:
                 logging.error("Invalid JSON in '{}'.".format(answer))
                 return None
-        except urllib.request.URLError as e:
+        except urllib.request.HTTPError as e:
             if e.code == 401 and auto_login:
                 logging.info("Unauthorized. Trying to log in again.")
                 self.session_id = None
-                if self.login():
-                    return self.request(path, data=data, method=method, auto_login=False, json_answer=json_answer)
+                self.login()
+                return self.request(path, data=data, method=method, auto_login=False, json_answer=json_answer)
             logging.error("HTTP Error {}: {}".format(e.code, e.reason))
             if self.settings.handle_http_errors:
                 return None
