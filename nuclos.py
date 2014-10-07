@@ -474,6 +474,8 @@ class BusinessObject:
         :param bo_id: The id to load. If it is None, this will create a new instance.
         :return: The business object instance.
         """
+        if bo_id is None and not self.meta.can_insert:
+            raise NuclosException("Insert of business object {} not allowed.".format(self.meta.name))
         return BusinessObjectInstance(self._nuclos, self, bo_id)
 
     def list(self):
@@ -508,7 +510,7 @@ class BusinessObject:
 
 class BusinessObjectInstance:
     # TODO: Support getting and setting reference attributes and subforms.
-    # TODO: Check metadata for all actions (can_update, can_insert, can_delete, is_writeable, is_nullable).
+    # TODO: Check metadata for attributes (is_writeable, is_nullable).
     def __init__(self, nuclos, business_object, bo_id=None):
         self._nuclos = nuclos
         self._business_object = business_object
@@ -531,6 +533,9 @@ class BusinessObjectInstance:
     def title(self):
         return self._data["_title"]
 
+    def is_new(self):
+        return self.bo_id is None
+
     def delete(self):
         """
         Delete this instance.
@@ -539,6 +544,8 @@ class BusinessObjectInstance:
         """
         # TODO: Test.
         # TODO: Prevent further usage of a deleted instance.
+        if not self._business_object.meta.can_delete:
+            raise NuclosException("Deletion of business object {} not allowed.".format(self._business_object.meta.name))
         try:
             self._nuclos.request(self._url, method="DELETE")
             return True
@@ -552,12 +559,18 @@ class BusinessObjectInstance:
         :return: True if successful, False otherwise.
         """
         # TODO: Implement. Create if it is a new instance, update otherwise. Update ID on creation. Clear the local
-        #       data changes.
-        if self.bo_id:
-            # Update.
+        # data changes.
+        if self.is_new():
+            # Insert.
+            if not self._business_object.meta.can_insert:
+                raise NuclosException(
+                    "Insert of business object {} not allowed.".format(self._business_object.meta.name))
             pass
         else:
-            # Insert.
+            # Update.
+            if not self._business_object.meta.can_update:
+                raise NuclosException(
+                    "Update of business object {} not allowed.".format(self._business_object.meta.name))
             pass
 
     def get_attribute(self, bo_attr_id):
@@ -605,4 +618,4 @@ class BusinessObjectInstance:
         """
         self.updated_attribute_data[bo_attr_id] = value
 
-    # TODO: Provide more methods to set attribute values.
+        # TODO: Provide more methods to set attribute values.
