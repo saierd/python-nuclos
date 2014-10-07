@@ -4,8 +4,7 @@ Copyright (c) 2014 Daniel Saier
 This project is licensed under the terms of the MIT license. See the LICENSE file.
 """
 
-# TODO: Collect paths in one place and reuse them.
-# TODO: HTTPS paths?
+# TODO: Support HTTPS.
 
 import sys
 
@@ -20,6 +19,15 @@ import json
 import locale
 import logging
 import urllib.request
+
+VERSION_ROUTE = "version"
+DB_VERSION_ROUTE = "dbversion"
+LOGIN_ROUTE = ""
+LOGOUT_ROUTE = ""
+BO_LIST_ROUTE = "bo_metas"
+BO_META_ROUTE = "bo_metas/{}"
+BO_INSTANCE_LIST_ROUTE = "bo_metas/{}/bos"
+BO_INSTANCE_ROUTE = "bo_metas/{}/bos/{}"
 
 
 class NuclosSettings:
@@ -124,12 +132,12 @@ class NuclosAPI:
     @property
     @Cached
     def version(self):
-        return self.request("version", auto_login=False, json_answer=False)
+        return self.request(VERSION_ROUTE, auto_login=False, json_answer=False)
 
     @property
     @Cached
     def db_version(self):
-        return self.request("dbversion", auto_login=False, json_answer=False)
+        return self.request(DB_VERSION_ROUTE, auto_login=False, json_answer=False)
 
     def require_version(self, *version):
         """
@@ -162,7 +170,7 @@ class NuclosAPI:
             "locale": self.settings.locale
         }
 
-        answer = self.request("", login_data, auto_login=False)
+        answer = self.request(LOGIN_ROUTE, login_data, auto_login=False)
         if answer:
             self.session_id = answer["session_id"]
             logging.info("Logging in to the Nuclos server.")
@@ -178,7 +186,7 @@ class NuclosAPI:
         if not self.session_id:
             return True
 
-        answer = self.request("", method="DELETE", json_answer=False)
+        answer = self.request(LOGOUT_ROUTE, method="DELETE", json_answer=False)
         if not answer is None:
             self.session_id = None
             logging.info("Logged out from the Nuclos server.")
@@ -200,7 +208,7 @@ class NuclosAPI:
 
         :return: See the Nuclos bometalist response.
         """
-        return self.request("bo_metas")
+        return self.request(BO_LIST_ROUTE)
 
     @Cached
     def _get_bo_meta_id(self, name):
@@ -348,7 +356,7 @@ class BusinessObjectMeta:
     @property
     @Cached
     def _data(self):
-        return self._nuclos.request("bo_metas/{}".format(self.bo_meta_id))
+        return self._nuclos.request(BO_META_ROUTE.format(self.bo_meta_id))
 
     @property
     def name(self):
@@ -465,8 +473,8 @@ class BusinessObject:
 
         :return: A list of BusinessObjectInstance objects.
         """
-        # TODO: make further instances accessible.
-        data = self._nuclos.request("bo_metas/{}/bos".format(self.bo_meta_id))
+        # TODO: Make further instances accessible.
+        data = self._nuclos.request(BO_INSTANCE_LIST_ROUTE.format(self.bo_meta_id))
 
         return [BusinessObjectInstance(self._nuclos, self, bo["bo_id"]) for bo in data["bos"]]
 
@@ -480,7 +488,7 @@ class BusinessObjectInstance:
     @property
     @Cached
     def _url(self):
-        return "bo_metas/{}/bos/{}".format(self._business_object.bo_meta_id, self.bo_id)
+        return BO_INSTANCE_ROUTE.format(self._business_object.bo_meta_id, self.bo_id)
 
     @property
     @Cached
@@ -498,7 +506,7 @@ class BusinessObjectInstance:
         :return: True is successful. False otherwise.
         """
         # TODO: Test.
-        # TODO: Prevent saving a deleted instance.
+        # TODO: Prevent further usage of a deleted instance.
         return not self._nuclos.request(self._url, method="DELETE") is None
 
     def get_attribute(self, bo_attr_id):
