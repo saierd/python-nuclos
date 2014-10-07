@@ -4,9 +4,6 @@ Copyright (c) 2014 Daniel Saier
 This project is licensed under the terms of the MIT license. See the LICENSE file.
 """
 
-# TODO: Catch 403 and throw NuclosAuthentificationException.
-# TODO: Remove the handle_http_errors settings and turn HTTP errors into exceptions.
-
 # TODO: Collect paths in one place and reuse them.
 # TODO: HTTPS paths?
 
@@ -67,10 +64,6 @@ class NuclosSettings:
         default_locale = locale.getlocale()[0]
         return self.config.get("nuclos", "locale", fallback=default_locale)
 
-    @property
-    def handle_http_errors(self):
-        return self.config.getboolean("nuclos", "handle_http_errors", fallback=True)
-
 
 class Cached:
     cached = []
@@ -105,6 +98,13 @@ class NuclosException(Exception):
 
 class NuclosVersionException(NuclosException):
     pass
+
+
+class NuclosHTTPException(NuclosException):
+    def __init__(self, exception):
+        self.code = exception.code
+        self.reason = exception.reason
+        super().__init__("HTTP Exception: {} - {}".format(self.code, self.reason))
 
 
 class NuclosAuthenticationException(NuclosException):
@@ -296,7 +296,8 @@ class NuclosAPI:
 
         url = self._build_url(path)
         request = urllib.request.Request(url)
-        request.add_header("Accept", "application/json")
+        if json_answer:
+            request.add_header("Accept", "application/json")
         if data:
             request.data = json.dumps(data).encode("utf-8")
             request.add_header("Content-Type", "application/json")
@@ -329,10 +330,11 @@ class NuclosAPI:
                 self.session_id = None
                 self.login()
                 return self.request(path, data=data, method=method, auto_login=False, json_answer=json_answer)
-            logging.error("HTTP Error {}: {}".format(e.code, e.reason))
-            if self.settings.handle_http_errors:
-                return None
-            raise e
+            elif e.code == 403:
+                raise NuclosAuthenticationException()
+            else:
+                logging.error("HTTP Error {}: {}".format(e.code, e.reason))
+                raise NuclosHTTPException(e)
 
     def _build_url(self, path):
         return "http://{}:{}/{}/rest/{}".format(self.settings.ip, self.settings.port, self.settings.instance, path)
