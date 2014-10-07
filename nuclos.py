@@ -478,6 +478,15 @@ class BusinessObject:
 
         return [BusinessObjectInstance(self._nuclos, self, bo["bo_id"]) for bo in data["bos"]]
 
+    def create(self):
+        """
+        Create a new instance of this business object.
+
+        :return: A business object instance which is new and can be saved to the database.
+        """
+        # TODO: Implement.
+        pass
+
 
 class BusinessObjectInstance:
     def __init__(self, nuclos, business_object, bo_id):
@@ -503,11 +512,24 @@ class BusinessObjectInstance:
         """
         Delete this instance.
 
-        :return: True is successful. False otherwise.
+        :return: True if successful. False otherwise.
         """
         # TODO: Test.
         # TODO: Prevent further usage of a deleted instance.
-        return not self._nuclos.request(self._url, method="DELETE") is None
+        try:
+            self._nuclos.request(self._url, method="DELETE")
+            return True
+        except NuclosHTTPException:
+            return False
+
+    def save(self):
+        """
+        Save this instance.
+
+        :return: True if successful, False otherwise.
+        """
+        # TODO: Implement.
+        pass
 
     def get_attribute(self, bo_attr_id):
         """
