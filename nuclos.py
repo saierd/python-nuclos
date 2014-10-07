@@ -4,6 +4,12 @@ Copyright (c) 2014 Daniel Saier
 This project is licensed under the terms of the MIT license. See the LICENSE file.
 """
 
+# TODO: Catch 403 and throw NuclosAuthentificationException.
+# TODO: Remove the handle_http_errors settings and turn HTTP errors into exceptions.
+
+# TODO: Collect paths in one place and reuse them.
+# TODO: HTTPS paths?
+
 import sys
 
 if sys.version_info[0] != 3 or sys.version_info[1] < 3:
@@ -102,8 +108,7 @@ class NuclosVersionException(NuclosException):
 
 
 class NuclosAuthenticationException(NuclosException):
-    def __init__(self):
-        super().__init__("Authentication failed!")
+    pass
 
 
 class NuclosAPI:
@@ -162,7 +167,7 @@ class NuclosAPI:
             self.session_id = answer["session_id"]
             logging.info("Logged in to the Nuclos server.")
         else:
-            raise NuclosAuthenticationException()
+            raise NuclosAuthenticationException("Login failed!")
 
     def logout(self):
         """
@@ -291,6 +296,7 @@ class NuclosAPI:
 
         url = self._build_url(path)
         request = urllib.request.Request(url)
+        request.add_header("Accept", "application/json")
         if data:
             request.data = json.dumps(data).encode("utf-8")
             request.add_header("Content-Type", "application/json")
