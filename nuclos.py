@@ -4,7 +4,7 @@ Copyright (c) 2014 Daniel Saier
 This project is licensed under the terms of the MIT license. See the LICENSE file.
 """
 
-# TODO: Support HTTPS.
+# TODO: HTTPS Support.
 
 import sys
 
@@ -467,6 +467,15 @@ class BusinessObject:
     def meta(self):
         return BusinessObjectMeta(self._nuclos, self.bo_meta_id)
 
+    def get(self, bo_id=None):
+        """
+        Get the instance with the given id.
+
+        :param bo_id: The id to load. If it is None, this will create a new instance.
+        :return: The business object instance.
+        """
+        return BusinessObjectInstance(self._nuclos, self, bo_id)
+
     def list(self):
         """
         Get a list of instances for this business object.
@@ -476,7 +485,17 @@ class BusinessObject:
         # TODO: Make further instances accessible.
         data = self._nuclos.request(BO_INSTANCE_LIST_ROUTE.format(self.bo_meta_id))
 
-        return [BusinessObjectInstance(self._nuclos, self, bo["bo_id"]) for bo in data["bos"]]
+        return [self.get(bo["bo_id"]) for bo in data["bos"]]
+
+    def search(self, text):
+        """
+        Search for instance including the given text.
+
+        :param text: The search text.
+        :return: A list of instances matching the search text.
+        """
+        # TODO: Implement.
+        pass
 
     def create(self):
         """
@@ -484,19 +503,23 @@ class BusinessObject:
 
         :return: A business object instance which is new and can be saved to the database.
         """
-        # TODO: Implement.
-        pass
+        return self.get(None)
 
 
 class BusinessObjectInstance:
-    def __init__(self, nuclos, business_object, bo_id):
+    # TODO: Support getting and setting reference attributes and subforms.
+    # TODO: Check metadata for all actions (can_update, can_insert, can_delete, is_writeable, is_nullable).
+    def __init__(self, nuclos, business_object, bo_id=None):
         self._nuclos = nuclos
         self._business_object = business_object
         self.bo_id = bo_id
+        self.updated_attribute_data = {}
 
     @property
     @Cached
     def _url(self):
+        if not self.bo_id:
+            raise NuclosException("Attempting to access data of an uninitialized business object instance.")
         return BO_INSTANCE_ROUTE.format(self._business_object.bo_meta_id, self.bo_id)
 
     @property
@@ -528,8 +551,14 @@ class BusinessObjectInstance:
 
         :return: True if successful, False otherwise.
         """
-        # TODO: Implement.
-        pass
+        # TODO: Implement. Create if it is a new instance, update otherwise. Update ID on creation. Clear the local
+        #       data changes.
+        if self.bo_id:
+            # Update.
+            pass
+        else:
+            # Insert.
+            pass
 
     def get_attribute(self, bo_attr_id):
         """
@@ -539,7 +568,10 @@ class BusinessObjectInstance:
         :return: The attributes value.
         :raise: AttributeError if the attribute does not exist.
         """
-        if bo_attr_id in self._data["bo_values"]:
+        if bo_attr_id in self.updated_attribute_data:
+            # There is unsaved local data for this attribute.
+            return self.updated_attributes[bo_attr_id]
+        elif bo_attr_id in self._data["bo_values"]:
             return self._data["bo_values"][bo_attr_id]
         raise AttributeError("Unknown attribute '{}'.".format(bo_attr_id))
 
@@ -563,3 +595,14 @@ class BusinessObjectInstance:
         if isinstance(name, str):
             return self.get_attribute_by_name(name)
         raise TypeError("Invalid argument type.")
+
+    def set_attribute(self, bo_attr_id, value):
+        """
+        Update an attribute.
+
+        :param bo_attr_id: The attribute to set.
+        :param value: The new value of the attribute.
+        """
+        self.updated_attribute_data[bo_attr_id] = value
+
+    # TODO: Provide more methods to set attribute values.
