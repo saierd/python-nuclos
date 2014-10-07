@@ -165,7 +165,7 @@ class NuclosAPI:
         answer = self.request("", login_data, auto_login=False)
         if answer:
             self.session_id = answer["session_id"]
-            logging.info("Logged in to the Nuclos server.")
+            logging.info("Logging in to the Nuclos server.")
         else:
             raise NuclosAuthenticationException("Login failed!")
 
@@ -200,7 +200,7 @@ class NuclosAPI:
 
         :return: See the Nuclos bometalist response.
         """
-        return self.request("bo")
+        return self.request("bo_metas")
 
     @Cached
     def _get_bo_meta_id(self, name):
@@ -346,7 +346,7 @@ class BusinessObjectMeta:
     @property
     @Cached
     def _data(self):
-        return self._nuclos.request("bo/meta/{}".format(self.bo_meta_id))
+        return self._nuclos.request("bo_metas/{}".format(self.bo_meta_id))
 
     @property
     def name(self):
@@ -464,7 +464,7 @@ class BusinessObject:
         :return: A list of BusinessObjectInstance objects.
         """
         # TODO: make further instances accessible.
-        data = self._nuclos.request("bo/{}".format(self.bo_meta_id))
+        data = self._nuclos.request("bo_metas/{}/bos".format(self.bo_meta_id))
 
         return [BusinessObjectInstance(self._nuclos, self, bo["bo_id"]) for bo in data["bos"]]
 
@@ -478,7 +478,7 @@ class BusinessObjectInstance:
     @property
     @Cached
     def _url(self):
-        return "bo/{}/{}".format(self._business_object.bo_meta_id, self.bo_id)
+        return "bo_metas/{}/bos/{}".format(self._business_object.bo_meta_id, self.bo_id)
 
     @property
     @Cached
