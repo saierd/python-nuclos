@@ -511,30 +511,46 @@ class BusinessObject:
 class BusinessObjectInstance:
     # TODO: Support getting and setting reference attributes and subforms.
     # TODO: Check metadata for attributes (is_writeable, is_nullable).
+    # TODO: Check if required attributes are given.
     def __init__(self, nuclos, business_object, bo_id=None):
         self._nuclos = nuclos
         self._business_object = business_object
-        self.bo_id = bo_id
-        self.updated_attribute_data = {}
+        self._bo_id = bo_id
+        self._data = None
+        self._deleted = False
+        self._updated_attribute_data = {}
+
+        self._initialized = True
 
     @property
     @Cached
     def _url(self):
-        if not self.bo_id:
+        if not self._bo_id:
             raise NuclosException("Attempting to access data of an uninitialized business object instance.")
-        return BO_INSTANCE_ROUTE.format(self._business_object.bo_meta_id, self.bo_id)
+        return BO_INSTANCE_ROUTE.format(self._business_object.bo_meta_id, self._bo_id)
 
     @property
-    @Cached
-    def _data(self):
-        return self._nuclos.request(self._url)
+    def data(self):
+        if not self._bo_id:
+            raise NuclosException("Attempting to access data of an uninitialized business object instance.")
+        if self._deleted:
+            raise NuclosException("Cannot access data of a deleted instance.")
+        if not self._data:
+            self._data = self._nuclos.request(self._url)
+        return self._data
 
     @property
     def title(self):
-        return self._data["_title"]
+        return self.data["_title"]
 
     def is_new(self):
-        return self.bo_id is None
+        return self._bo_id is None
+
+    def reload(self):
+        if self._deleted:
+            raise NuclosException("Cannot reload a deleted instance.")
+        self._data = None
+        self._updated_attribute_data = {}
 
     def delete(self):
         """
@@ -543,11 +559,13 @@ class BusinessObjectInstance:
         :return: True if successful. False otherwise.
         """
         # TODO: Test.
-        # TODO: Prevent further usage of a deleted instance.
+        if self._deleted:
+            return True
         if not self._business_object.meta.can_delete:
             raise NuclosException("Deletion of business object {} not allowed.".format(self._business_object.meta.name))
         try:
             self._nuclos.request(self._url, method="DELETE")
+            self._deleted = True
             return True
         except NuclosHTTPException:
             return False
@@ -558,20 +576,54 @@ class BusinessObjectInstance:
 
         :return: True if successful, False otherwise.
         """
-        # TODO: Implement. Create if it is a new instance, update otherwise. Update ID on creation. Clear the local
-        # data changes.
+        if self._deleted:
+            raise NuclosException("Cannot save a deleted instance.")
+        if not self._updated_attribute_data:
+            return True
         if self.is_new():
             # Insert.
             if not self._business_object.meta.can_insert:
                 raise NuclosException(
                     "Insert of business object {} not allowed.".format(self._business_object.meta.name))
-            pass
+            try:
+                url = BO_INSTANCE_LIST_ROUTE.format(self._business_object.meta.bo_meta_id)
+                result = self._nuclos.request(url, self._update_data(), method="POST")
+                if result:
+                    self._bo_id = result["bo_id"]
+                    self._data = result
+                    self._updated_attribute_data = {}
+                    return True
+            except NuclosHTTPException:
+                return False
         else:
             # Update.
             if not self._business_object.meta.can_update:
                 raise NuclosException(
                     "Update of business object {} not allowed.".format(self._business_object.meta.name))
-            pass
+            try:
+                result = self._nuclos.request(self._url, self._update_data(), method="PUT")
+                if result:
+                    self._data = result
+                    self._updated_attribute_data = {}
+                    return True
+            except NuclosHTTPException:
+                return False
+        return False
+
+    def _update_data(self):
+        # TODO: Refactor this method.
+        # TODO: Change this to use the new format once it is implemented in Nuclos.
+        #       See http://www.nuclos.de/de/forum/sonstiges/5348-rest-layout-bzw-bo-meta?start=6#6923
+        data = {
+            "bo_meta_id": self._business_object.meta.bo_meta_id,
+            "bo_values": self._updated_attribute_data
+        }
+        if self.is_new():
+            data["_flag"] = "insert"
+        else:
+            data["_flag"] = "update"
+            data["bo_id"] = self._bo_id
+        return data
 
     def get_attribute(self, bo_attr_id):
         """
@@ -581,11 +633,11 @@ class BusinessObjectInstance:
         :return: The attributes value.
         :raise: AttributeError if the attribute does not exist.
         """
-        if bo_attr_id in self.updated_attribute_data:
+        if bo_attr_id in self._updated_attribute_data:
             # There is unsaved local data for this attribute.
             return self.updated_attributes[bo_attr_id]
-        elif bo_attr_id in self._data["bo_values"]:
-            return self._data["bo_values"][bo_attr_id]
+        elif bo_attr_id in self.data["bo_values"]:
+            return self.data["bo_values"][bo_attr_id]
         raise AttributeError("Unknown attribute '{}'.".format(bo_attr_id))
 
     def get_attribute_by_name(self, name):
@@ -616,6 +668,29 @@ class BusinessObjectInstance:
         :param bo_attr_id: The attribute to set.
         :param value: The new value of the attribute.
         """
-        self.updated_attribute_data[bo_attr_id] = value
+        # TODO: Check for datatypes and similar?
+        self._updated_attribute_data[bo_attr_id] = value
 
-        # TODO: Provide more methods to set attribute values.
+    def set_attribute_by_name(self, name, value):
+        """
+        Update an attribute by its name.
+
+        :param name: The name of the attribute to search.
+        :param value: The value to set the attribute to.
+        :raise: AttributeError if the attribute does not exist.
+        """
+        attr = self._business_object.meta.get_attribute_by_name(name)
+        if attr:
+            return self.set_attribute(attr.bo_attr_id, value)
+        raise AttributeError("Unknown attribute '{}'.".format(name))
+
+    def __setattr__(self, name, value):
+        if not "_initialized" in self.__dict__ or name in self.__dict__:
+            super().__setattr__(name, value)
+        else:
+            self.set_attribute_by_name(name, value)
+
+    def __setitem__(self, name, value):
+        if isinstance(name, str):
+            return self.set_attribute_by_name(name, value)
+        raise TypeError("Invalid argument type.")
