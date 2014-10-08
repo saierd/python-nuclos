@@ -1,3 +1,6 @@
+syntax: glob
 __pycache__/
-docs/
+documentation/
 test.*
+*.zip
+*.tar.gz
