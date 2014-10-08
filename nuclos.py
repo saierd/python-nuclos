@@ -5,6 +5,8 @@ This project is licensed under the terms of the MIT license. See the LICENSE fil
 """
 
 # TODO: HTTPS Support.
+# TODO: Do not catch the NuclosHTTPException but let the user handle it instead? Write this down in the last part of
+#       the documentation.
 
 import sys
 
@@ -104,7 +106,7 @@ class NuclosException(Exception):
     pass
 
 
-class NuclosVersionException(NuclosException):
+class NuclosAuthenticationException(NuclosException):
     pass
 
 
@@ -115,7 +117,7 @@ class NuclosHTTPException(NuclosException):
         super().__init__("HTTP Exception: {} - {}".format(self.code, self.reason))
 
 
-class NuclosAuthenticationException(NuclosException):
+class NuclosVersionException(NuclosException):
     pass
 
 
@@ -512,6 +514,7 @@ class BusinessObjectInstance:
     # TODO: Support getting and setting reference attributes and subforms.
     # TODO: Check metadata for attributes (is_writeable, is_nullable).
     # TODO: Check if required attributes are given.
+    # TODO: Support status and process.
     def __init__(self, nuclos, business_object, bo_id=None):
         self._nuclos = nuclos
         self._business_object = business_object
@@ -546,9 +549,9 @@ class BusinessObjectInstance:
     def is_new(self):
         return self._bo_id is None
 
-    def reload(self):
+    def refresh(self):
         if self._deleted:
-            raise NuclosException("Cannot reload a deleted instance.")
+            raise NuclosException("Cannot refresh a deleted instance.")
         self._data = None
         self._updated_attribute_data = {}
 
@@ -561,6 +564,8 @@ class BusinessObjectInstance:
         # TODO: Test.
         if self._deleted:
             return True
+        if self.is_new():
+            raise NuclosException("Cannot delete an unsaved instance.")
         if not self._business_object.meta.can_delete:
             raise NuclosException("Deletion of business object {} not allowed.".format(self._business_object.meta.name))
         try:
