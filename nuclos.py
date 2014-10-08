@@ -561,7 +561,6 @@ class BusinessObjectInstance:
 
         :return: True if successful. False otherwise.
         """
-        # TODO: Test.
         if self._deleted:
             return True
         if self.is_new():
@@ -569,7 +568,7 @@ class BusinessObjectInstance:
         if not self._business_object.meta.can_delete:
             raise NuclosException("Deletion of business object {} not allowed.".format(self._business_object.meta.name))
         try:
-            self._nuclos.request(self._url, method="DELETE")
+            self._nuclos.request(self._url, method="DELETE", json_answer=False)
             self._deleted = True
             return True
         except NuclosHTTPException:
