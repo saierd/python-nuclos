@@ -12,10 +12,10 @@ Die Datei `nuclos.py` sollte sich im selben Ordner befinden, wie das Python Scri
 
     from nuclos import NuclosAPI
 
-Um die Verbindung mit einem Nuclos Server herzustellen werden die Verbindungsdaten aus einer `.ini` Datei gelesen. In
+Um die Verbindung mit einem Nuclos Server herzustellen werden die Verbindungsdaten aus einer `ini`-Datei gelesen. In
 der im Quellcode enthaltenen `default.ini` sind alle verfügbaren Parameter und ihre Standardwerte angegeben.
 
-    nuclos = NuclosAPI.from_settings_file("settings.ini")
+    nuclos = NuclosAPI("settings.ini")
 
 ## Businessobjekte
 

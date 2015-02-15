@@ -122,14 +122,12 @@ class NuclosVersionException(NuclosException):
 
 
 class NuclosAPI:
-    def __init__(self, settings):
-        self.settings = settings
+    def __init__(self, setting_file):
+        """
+        :param setting_file: The setting file to use.
+        """
+        self.settings = NuclosSettings(setting_file)
         self.session_id = None
-
-    @classmethod
-    def from_settings_file(cls, filename):
-        settings = NuclosSettings(filename)
-        return cls(settings)
 
     @property
     @Cached
