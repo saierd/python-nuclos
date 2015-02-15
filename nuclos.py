@@ -496,17 +496,24 @@ class BusinessObject:
             raise NuclosException("Insert of business object {} not allowed.".format(self.meta.name))
         return BusinessObjectInstance(self._nuclos, self, bo_id)
 
-    def list(self, search=None):
+    def list(self, search=None, limit=0, offset=0, sort=None):
         """
         Get a list of instances for this business object.
 
         :param search: A text to search for.
+        :param limit: The maximum number of instances to load.
+        :param offset: The number of instances to skip.
         :return: A list of BusinessObjectInstance objects.
         """
-        # TODO: Make further instances accessible.
         parameters = {}
         if search:
             parameters["search"] = search
+        if limit:
+            parameters["chunksize"] = limit
+        if offset or limit:
+            parameters["offset"] = offset
+        if sort:
+            parameters["sort"] = sort
 
         data = self._nuclos.request(BO_INSTANCE_LIST_ROUTE.format(self.bo_meta_id), parameters=parameters)
 
@@ -659,7 +666,7 @@ class BusinessObjectInstance:
         """
         if bo_attr_id in self._updated_attribute_data:
             # There is unsaved local data for this attribute.
-            return self.updated_attributes[bo_attr_id]
+            return self._updated_attribute_data[bo_attr_id]
         elif bo_attr_id in self.data["bo_values"]:
             return self.data["bo_values"][bo_attr_id]
         raise AttributeError("Unknown attribute '{}'.".format(bo_attr_id))
