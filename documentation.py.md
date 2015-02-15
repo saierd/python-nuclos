@@ -54,7 +54,14 @@ Mit verschiedenen Argumenten kann man das Verhalten der Methode beeinflussen und
 Die `search` Methode sucht nach Instanzen, in denen ein bestimmter Text vorkommt. Sie akzeptiert alle Argumente, die
 auch `list` akzeptiert.
 
-    mustermann = customer_bo.search("Max Mustermann")
+    customers = customer_bo.search("Doe")
+
+Für `list` und `search` gibt es auch entsprechende Methoden, die nur den ersten Treffer zurückgeben.
+
+Beide Methoden akzeptieren die selben Argumente wie `list`.
+
+    customer = customer_bo.get_one()
+             = customer_bo.search_one("Doe")
 
 Die `create` Methode erzeugt eine neue Instanz. Diese wird nicht in Nuclos gespeichert, bis die `save` Methode
 aufgerufen wird. In dieser Zeit kann die Instanz nur eingeschränkt verwendet werden.
