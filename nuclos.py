@@ -496,13 +496,15 @@ class BusinessObject:
             raise NuclosException("Insert of business object {} not allowed.".format(self.meta.name))
         return BusinessObjectInstance(self._nuclos, self, bo_id)
 
-    def list(self, search=None, limit=0, offset=0, sort=None):
+    def list(self, search=None, limit=0, offset=0, sort=None, sort_by_title=False):
         """
         Get a list of instances for this business object.
 
         :param search: A text to search for.
         :param limit: The maximum number of instances to load.
         :param offset: The number of instances to skip.
+        :param sort:
+        :param sort_by_title: Whether the list should be sorted by the instance titles.
         :return: A list of BusinessObjectInstance objects.
         """
         parameters = {}
@@ -512,8 +514,21 @@ class BusinessObject:
             parameters["chunksize"] = limit
         if offset or limit:
             parameters["offset"] = offset
+
         if sort:
-            parameters["sort"] = sort
+            # Allow to give a name of an attribute for sorting.
+            if isinstance(sort, str):
+                attr = self.meta.get_attribute_by_name(sort)
+                if attr:
+                    sort = attr
+
+            if isinstance(sort, AttributeMeta):
+                parameters["sort"] = sort.bo_attr_id
+            else:
+                parameters["sort"] = sort
+
+        if sort_by_title:
+            parameters["sort"] = "BOTITLE"
 
         data = self._nuclos.request(BO_INSTANCE_LIST_ROUTE.format(self.bo_meta_id), parameters=parameters)
 
