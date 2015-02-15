@@ -172,7 +172,7 @@ class NuclosAPI:
             "locale": self.settings.locale
         }
 
-        answer = self.request(LOGIN_ROUTE, login_data, auto_login=False)
+        answer = self.request(LOGIN_ROUTE, data=login_data, auto_login=False)
         if answer:
             self.session_id = answer["session_id"]
             logging.info("Logging in to the Nuclos server.")
@@ -289,11 +289,12 @@ class NuclosAPI:
     def business_objects(self):
         return [self.get_business_object(bo["bo_meta_id"]) for bo in self._business_objects]
 
-    def request(self, path, data=None, method=None, auto_login=True, json_answer=True):
+    def request(self, path, parameters=None, data=None, method=None, auto_login=True, json_answer=True):
         """
         Send a request to the Nuclos server.
 
         :param path: The path to open.
+        :param parameters: A dictionary of parameters to add to the request URL.
         :param data: The data to add. If this is given the request will automatically be a POST request.
         :param method: The HTTP method to use. If not set this will be GET or POST, depending on the data.
         :param auto_login: Try to log in automatically in case of a 401 error.
@@ -304,7 +305,7 @@ class NuclosAPI:
         if not self.session_id and auto_login:
             self.login()
 
-        url = self._build_url(path)
+        url = self._build_url(path, parameters)
         request = urllib.request.Request(url)
         if json_answer:
             request.add_header("Accept", "application/json")
@@ -346,8 +347,23 @@ class NuclosAPI:
                 logging.error("HTTP Error {}: {}".format(e.code, e.reason))
                 raise NuclosHTTPException(e)
 
-    def _build_url(self, path):
-        return "http://{}:{}/{}/rest/{}".format(self.settings.ip, self.settings.port, self.settings.instance, path)
+    def _build_url(self, path, parameters=None):
+        """
+        Build an URL for a request to the Nuclos server.
+
+        :param path: The path to request.
+        :param parameters: URL parameters.
+        :return: The complete server URL.
+        """
+        if not parameters:
+            parameters = {}
+        param = "&".join("{}={}".format(k, parameters[k]) for k in parameters)
+
+        url = "http://{}:{}/{}/rest/{}".format(self.settings.ip, self.settings.port, self.settings.instance, path)
+        if param:
+            url += "?" + param
+
+        return url
 
 
 class BusinessObjectMeta:
@@ -480,10 +496,11 @@ class BusinessObject:
             raise NuclosException("Insert of business object {} not allowed.".format(self.meta.name))
         return BusinessObjectInstance(self._nuclos, self, bo_id)
 
-    def list(self):
+    def list(self, search=None):
         """
         Get a list of instances for this business object.
 
+        :param search: A text to search for.
         :return: A list of BusinessObjectInstance objects.
         """
         # TODO: Make further instances accessible.
@@ -498,8 +515,7 @@ class BusinessObject:
         :param text: The search text.
         :return: A list of instances matching the search text.
         """
-        # TODO: Implement.
-        pass
+        return self.list(search=text)
 
     def create(self):
         """
@@ -591,7 +607,7 @@ class BusinessObjectInstance:
                     "Insert of business object {} not allowed.".format(self._business_object.meta.name))
             try:
                 url = BO_INSTANCE_LIST_ROUTE.format(self._business_object.meta.bo_meta_id)
-                result = self._nuclos.request(url, self._update_data(), method="POST")
+                result = self._nuclos.request(url, data=self._update_data(), method="POST")
                 if result:
                     self._bo_id = result["bo_id"]
                     self._data = result
@@ -605,7 +621,7 @@ class BusinessObjectInstance:
                 raise NuclosException(
                     "Update of business object {} not allowed.".format(self._business_object.meta.name))
             try:
-                result = self._nuclos.request(self._url, self._update_data(), method="PUT")
+                result = self._nuclos.request(self._url, data=self._update_data(), method="PUT")
                 if result:
                     self._data = result
                     self._updated_attribute_data = {}
