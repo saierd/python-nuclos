@@ -493,7 +493,7 @@ class BusinessObject:
 
     def search(self, text):
         """
-        Search for instance including the given text.
+        Search for instances which match the given text.
 
         :param text: The search text.
         :return: A list of instances matching the search text.
@@ -507,7 +507,7 @@ class BusinessObject:
 
         :return: A business object instance which is new and can be saved to the database.
         """
-        return self.get(None)
+        return self.get()
 
 
 class BusinessObjectInstance:
@@ -559,7 +559,7 @@ class BusinessObjectInstance:
         """
         Delete this instance.
 
-        :return: True if successful. False otherwise.
+        :return: True if successful.
         """
         if self._deleted:
             return True
@@ -578,7 +578,7 @@ class BusinessObjectInstance:
         """
         Save this instance.
 
-        :return: True if successful, False otherwise.
+        :return: True if successful.
         """
         if self._deleted:
             raise NuclosException("Cannot save a deleted instance.")

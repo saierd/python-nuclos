@@ -21,4 +21,3 @@ clean:
 	@rm -f *.zip
 	@rm -f *.tar.gz
 	@rm -rf $(DOC_FOLDER)
-
