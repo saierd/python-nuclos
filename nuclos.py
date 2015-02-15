@@ -357,7 +357,7 @@ class NuclosAPI:
         """
         if not parameters:
             parameters = {}
-        param = "&".join("{}={}".format(k, parameters[k]) for k in parameters)
+        param = "&".join("{}={}".format(str(k), str(parameters[k])) for k in parameters)
 
         url = "http://{}:{}/{}/rest/{}".format(self.settings.ip, self.settings.port, self.settings.instance, path)
         if param:
@@ -504,7 +504,11 @@ class BusinessObject:
         :return: A list of BusinessObjectInstance objects.
         """
         # TODO: Make further instances accessible.
-        data = self._nuclos.request(BO_INSTANCE_LIST_ROUTE.format(self.bo_meta_id))
+        parameters = {}
+        if search:
+            parameters["search"] = search
+
+        data = self._nuclos.request(BO_INSTANCE_LIST_ROUTE.format(self.bo_meta_id), parameters=parameters)
 
         return [self.get(bo["bo_id"]) for bo in data["bos"]]
 
