@@ -1,5 +1,5 @@
 """
-Copyright (c) 2014 Daniel Saier
+Copyright (c) 2014-2015 Daniel Saier
 
 This project is licensed under the terms of the MIT license. See the LICENSE file.
 """
@@ -555,6 +555,7 @@ class BusinessObject:
 
 class BusinessObjectInstance:
     # TODO: Support getting and setting reference attributes and subforms.
+    # TODO: Get a list of instances in subforms.
     # TODO: Check metadata for attributes (is_writeable, is_nullable).
     # TODO: Check if required attributes are given.
     # TODO: Support status and process.
