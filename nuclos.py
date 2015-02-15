@@ -496,14 +496,14 @@ class BusinessObject:
             raise NuclosException("Insert of business object {} not allowed.".format(self.meta.name))
         return BusinessObjectInstance(self._nuclos, self, bo_id)
 
-    def list(self, search=None, limit=0, offset=0, sort=None, sort_by_title=False):
+    def list(self, search=None, offset=0, limit=0, sort=None, sort_by_title=False):
         """
         Get a list of instances for this business object.
 
         :param search: A text to search for.
-        :param limit: The maximum number of instances to load.
         :param offset: The number of instances to skip.
-        :param sort:
+        :param limit: The maximum number of instances to load.
+        :param sort: An attribute (or the name of an attribute) to sort by.
         :param sort_by_title: Whether the list should be sorted by the instance titles.
         :return: A list of BusinessObjectInstance objects.
         """
@@ -534,14 +534,15 @@ class BusinessObject:
 
         return [self.get(bo["bo_id"]) for bo in data["bos"]]
 
-    def search(self, text):
+    def search(self, text, **kwargs):
         """
         Search for instances which match the given text.
 
         :param text: The search text.
+        :param **kwargs: Other arguments the list method accepts.
         :return: A list of instances matching the search text.
         """
-        return self.list(search=text)
+        return self.list(text, **kwargs)
 
     def create(self):
         """
