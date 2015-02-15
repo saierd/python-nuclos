@@ -533,15 +533,40 @@ class BusinessObject:
 
         return [self.get(bo["bo_id"]) for bo in data["bos"]]
 
+    def get_one(self, *args, **kwargs):
+        """
+        Get the first list element.
+
+        :param args, kwargs: Arguments which the list method accepts.
+        :return: The first instance found or None if there is none.
+        """
+        result = self.list(*args, **kwargs)
+        if result:
+            return result[0]
+        return None
+
     def search(self, text, **kwargs):
         """
         Search for instances which match the given text.
 
         :param text: The search text.
-        :param **kwargs: Other arguments the list method accepts.
+        :param kwargs: Other arguments the list method accepts.
         :return: A list of instances matching the search text.
         """
         return self.list(text, **kwargs)
+
+    def search_one(self, text, **kwargs):
+        """
+        Find a single instance.
+
+        :param text: The search text.
+        :param kwargs: Other arguments the list method accepts.
+        :return: The instance found or None if there is no result.
+        """
+        result = self.search(text, **kwargs)
+        if result:
+            return result[0]
+        return None
 
     def create(self):
         """
