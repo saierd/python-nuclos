@@ -95,6 +95,7 @@ class Cached:
         if not isinstance(args, collections.Hashable):
             return self.f(*args)
         if not args in self.cache:
+            # noinspection PyArgumentList
             self.cache[args] = self.f(*args)
         return self.cache[args]
 
