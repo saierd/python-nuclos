@@ -43,6 +43,19 @@ Mit der `list` Methode erhält man eine Liste der Instanzen eines Businessobjekt
     customers = customer_bo.list()
     customer = customers[0]
 
+Mit verschiedenen Argumenten kann man das Verhalten der Methode beeinflussen und bspw. eine Sortierung einstellen.
+
+    customer_bo.list(offset=10, limit=20)
+
+    customer_bo.list(sort=customer_bo.meta.city)
+    customer_bo.list(sort="city")
+    customer_bo.list(sort_by_title=True)
+
+Die `search` Methode sucht nach Instanzen, in denen ein bestimmter Text vorkommt. Sie akzeptiert alle Argumente, die
+auch `list` akzeptiert.
+
+    mustermann = customer_bo.search("Max Mustermann")
+
 Die `create` Methode erzeugt eine neue Instanz. Diese wird nicht in Nuclos gespeichert, bis die `save` Methode
 aufgerufen wird. In dieser Zeit kann die Instanz nur eingeschränkt verwendet werden.
 
