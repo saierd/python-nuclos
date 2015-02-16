@@ -87,6 +87,10 @@ Auch hier ist die Groß- und Kleinschreibung egal. Leerzeichen können wieder du
           = customer.get_attribute_by_name("email")
           = customer.get_attribute(<bo_attr_id>)
 
+### Verändern von Daten
+
+    #
+
 Nach dem selben Prinzip können den Attributen neue Werte zugewiesen werden.
 
     customer.email = "john@doe.com"
@@ -109,6 +113,21 @@ Der Aufruf verwirft außerdem alle ungespeicherten Änderungen von Attributen.
 Die `delete` Methode löscht die Instanz.
 
     customer.delete()
+
+### Referenzfelder
+
+    #
+
+Beim Auslesen von Referenzfeldern muss man beachten, dass es in der Nuclos API derzeit keine Möglichkeit gibt, das
+referenzierte Businessobjekt herauszufinden. Dieses muss daher explizit angegeben werden.
+
+Sobald die API diese Information liefert wird es ein Update geben, womit Referenzfelder genauso funktionieren wie alle
+anderen Felder.
+
+Das zurückgegebene Object ist wieder eine Instanz eines Businessobjektes und kann genau so verwendet werden.
+
+    customer = order.get_attribute_by_name("customer", nuclos.customer)
+    print(customer.name)
 
 ## Metadaten
 

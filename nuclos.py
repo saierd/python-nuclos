@@ -6,7 +6,7 @@ This project is licensed under the terms of the MIT license. See the LICENSE fil
 
 # TODO: HTTPS Support.
 # TODO: Do not catch the NuclosHTTPException but let the user handle it instead? Write this down in the last part of
-#       the documentation.
+# the documentation.
 
 import sys
 
@@ -583,6 +583,8 @@ class BusinessObjectInstance:
     # TODO: Check metadata for attributes (is_writeable, is_nullable).
     # TODO: Check if required attributes are given.
     # TODO: Support status and process.
+    # TODO: Use AuthenticationException where an action is not allowed.
+    # TODO: Use _restrictions.
     def __init__(self, nuclos, business_object, bo_id=None):
         self._nuclos = nuclos
         self._business_object = business_object
@@ -599,6 +601,10 @@ class BusinessObjectInstance:
         if not self._bo_id:
             raise NuclosException("Attempting to access data of an uninitialized business object instance.")
         return BO_INSTANCE_ROUTE.format(self._business_object.bo_meta_id, self._bo_id)
+
+    @property
+    def meta(self):
+        return self._business_object.meta
 
     @property
     def data(self):
@@ -685,7 +691,7 @@ class BusinessObjectInstance:
     def _update_data(self):
         # TODO: Refactor this method.
         # TODO: Change this to use the new format once it is implemented in Nuclos.
-        #       See http://www.nuclos.de/de/forum/sonstiges/5348-rest-layout-bzw-bo-meta?start=6#6923
+        # See http://www.nuclos.de/de/forum/sonstiges/5348-rest-layout-bzw-bo-meta?start=6#6923
         data = {
             "bo_meta_id": self._business_object.meta.bo_meta_id,
             "bo_values": self._updated_attribute_data
@@ -697,32 +703,45 @@ class BusinessObjectInstance:
             data["bo_id"] = self._bo_id
         return data
 
-    def get_attribute(self, bo_attr_id):
+    def get_attribute(self, bo_attr_id, referenced_bo=None):
         """
         Get the value of an attribute.
 
         :param bo_attr_id: The attribute id to get the value of.
-        :return: The attributes value.
+        :param referenced_bo: The business object which is referenced by this attribute.
+        :return: The attribute's value.
         :raise: AttributeError if the attribute does not exist.
         """
+        data = None
         if bo_attr_id in self._updated_attribute_data:
             # There is unsaved local data for this attribute.
-            return self._updated_attribute_data[bo_attr_id]
+            data = self._updated_attribute_data[bo_attr_id]
         elif bo_attr_id in self.data["bo_values"]:
-            return self.data["bo_values"][bo_attr_id]
-        raise AttributeError("Unknown attribute '{}'.".format(bo_attr_id))
+            data = self.data["bo_values"][bo_attr_id]
 
-    def get_attribute_by_name(self, name):
+        attr = self._business_object.meta.get_attribute(bo_attr_id)
+        if attr is None:
+            raise AttributeError("Unknown attribute '{}'.".format(bo_attr_id))
+
+        if attr.is_reference and not data is None:
+            if referenced_bo:
+                return referenced_bo.get(data["id"])
+            raise NuclosVersionException("This version of Nuclos does not support loading reference fields. "
+                                         "Please provide the business object this attribute references.")
+        return data
+
+    def get_attribute_by_name(self, name, referenced_bo=None):
         """
         Get the value of an attribute by its name.
 
         :param name: The name of the attribute to search.
+        :param referenced_bo: The business object which is referenced by this attribute.
         :return: The attribute value.
         :raise: AttributeError if the attribute does not exist.
         """
         attr = self._business_object.meta.get_attribute_by_name(name)
         if attr:
-            return self.get_attribute(attr.bo_attr_id)
+            return self.get_attribute(attr.bo_attr_id, referenced_bo=referenced_bo)
         raise AttributeError("Unknown attribute '{}'.".format(name))
 
     def __getattr__(self, name):
