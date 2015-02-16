@@ -582,7 +582,6 @@ class BusinessObject:
 
 
 class BusinessObjectInstance:
-    # TODO: Get a list of instances in subforms.
     # TODO: Add new instances to a subform.
 
     # TODO: Status.
@@ -822,11 +821,23 @@ class BusinessObjectInstance:
         raise AttributeError("Unknown attribute '{}'.".format(name))
 
     def __getattr__(self, name):
-        return self.get_attribute_by_name(name)
+        try:
+            return self.get_attribute_by_name(name)
+        except AttributeError as e:
+            try:
+                return self.get_dependencies_by_name(name)
+            except AttributeError:
+                raise e
 
     def __getitem__(self, name):
         if isinstance(name, str):
-            return self.get_attribute_by_name(name)
+            try:
+                return self.get_attribute_by_name(name)
+            except AttributeError as e:
+                try:
+                    return self.get_dependencies_by_name(name)
+                except AttributeError:
+                    raise e
         raise TypeError("Invalid argument type.")
 
     def _attribute_is_writeable(self, attr):
