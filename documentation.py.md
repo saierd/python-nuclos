@@ -145,6 +145,9 @@ Daten aus Unterformularen können nach dem selben Prinzip geladen werden wie Att
 Dabei muss der Name des Businessobjektes verwendet werden, das die Einträge des Unterformulars bildet. Im Beispiel
 hat das Businessobjekt der Positionen den Namen `order position`.
 
+Falls es sowohl ein Attribut als auch ein Unterformular mit dem selben Namen gibt, geben die ersten beiden
+Möglichkeiten den Wert des Attributes zurück.
+
     positions = order.order_position
               = order["order position"]
               = order.get_dependencies_by_name("order_position")
@@ -152,6 +155,14 @@ hat das Businessobjekt der Positionen den Namen `order position`.
 
     for pos in positions:
         print(pos.title)
+
+Setzt man `create_` vor den Namen des Unterformulars erhält man eine Methode, die einen neuen Eintrag in einem
+Unterformular erzeugt.
+
+    new_position = order.create_order_position()
+                 = order.create_dependency_by_name("order position")
+    new_position.article = ...
+    new_position.save()
 
 ## Metadaten
 
