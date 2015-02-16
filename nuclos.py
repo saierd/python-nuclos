@@ -644,7 +644,8 @@ class BusinessObjectInstance:
         if self.is_new():
             raise NuclosException("Cannot delete an unsaved instance.")
         if not self._business_object.meta.can_delete:
-            raise NuclosException("Deletion of business object {} not allowed.".format(self._business_object.meta.name))
+            raise NuclosAuthenticationException(
+                "Deletion of business object {} not allowed.".format(self._business_object.meta.name))
         try:
             self._nuclos.request(self._url, method="DELETE", json_answer=False)
             self._deleted = True
@@ -665,7 +666,7 @@ class BusinessObjectInstance:
         if self.is_new():
             # Insert.
             if not self._business_object.meta.can_insert:
-                raise NuclosException(
+                raise NuclosAuthenticationException(
                     "Insert of business object {} not allowed.".format(self._business_object.meta.name))
             try:
                 url = BO_INSTANCE_LIST_ROUTE.format(self._business_object.meta.bo_meta_id)
@@ -680,7 +681,7 @@ class BusinessObjectInstance:
         else:
             # Update.
             if not self._business_object.meta.can_update:
-                raise NuclosException(
+                raise NuclosAuthenticationException(
                     "Update of business object {} not allowed.".format(self._business_object.meta.name))
             try:
                 result = self._nuclos.request(self._url, data=self._update_data(), method="PUT")
