@@ -580,11 +580,7 @@ class BusinessObject:
 class BusinessObjectInstance:
     # TODO: Support getting and setting reference attributes and subforms.
     # TODO: Get a list of instances in subforms.
-    # TODO: Check metadata for attributes (is_writeable, is_nullable).
-    # TODO: Check if required attributes are given.
     # TODO: Support status and process.
-    # TODO: Use AuthenticationException where an action is not allowed.
-    # TODO: Use _restrictions.
     def __init__(self, nuclos, business_object, bo_id=None):
         self._nuclos = nuclos
         self._business_object = business_object
@@ -757,6 +753,20 @@ class BusinessObjectInstance:
             return self.get_attribute_by_name(name)
         raise TypeError("Invalid argument type.")
 
+    def _attribute_is_writeable(self, attr):
+        """
+        Check whether the given attribute is writeable.
+
+        :param attr: The attribute to check.
+        :return: True if it is writeable.
+        """
+        if not attr.is_writeable:
+            return False
+        if attr.bo_attr_id in self.data["_restrictions"]:
+            if self.data["_restrictions"][attr.bo_attr_id] == "nowrite":
+                return False
+        return True
+
     def set_attribute(self, bo_attr_id, value):
         """
         Update an attribute.
@@ -767,6 +777,12 @@ class BusinessObjectInstance:
         attr = self._business_object.meta.get_attribute(bo_attr_id)
         if attr is None:
             raise AttributeError("Unknown attribute '{}'.".format(bo_attr_id))
+
+        if not self._attribute_is_writeable(attr):
+            raise NuclosAuthenticationException("Attribute '{}' is not writeable.".format(attr.name))
+
+        if value is None and not attr.is_nullable:
+            raise NuclosAuthenticationException("Attribute '{}' is not nullable.".format(attr.name))
 
         if attr.is_reference and isinstance(value, BusinessObjectInstance):
             # TODO: Check whether the value is an instance of the correct business object. Needs bo_id from the API.
