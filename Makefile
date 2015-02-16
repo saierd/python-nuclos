@@ -1,13 +1,14 @@
 DOC_FOLDER = documentation
 PACKAGE_CONTENT = nuclos.py default.ini LICENSE $(DOC_FOLDER)
+DATE = $(shell date +%Y-%m-%d)
 
 all: documentation package
 
 package:
 	@echo "Packaging the zip file..."
-	@zip -r python-nuclos.zip $(PACKAGE_CONTENT)
+	@zip -r python-nuclos-$(DATE).zip $(PACKAGE_CONTENT)
 	@echo "Packaging the tar file..."
-	@tar -czf python-nuclos.tar.gz $(PACKAGE_CONTENT)
+	@tar -czf python-nuclos-$(DATE).tar.gz $(PACKAGE_CONTENT)
 
 documentation: docco-installed
 	@echo "Building documentation..."

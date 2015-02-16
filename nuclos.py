@@ -585,6 +585,7 @@ class BusinessObjectInstance:
     # TODO: Status.
     # TODO: Process.
     # TODO: Document fields.
+    # TODO: Call business rules.
     def __init__(self, nuclos, business_object, bo_id=None):
         self._nuclos = nuclos
         self._business_object = business_object
