@@ -129,6 +129,12 @@ Das zurückgegebene Object ist wieder eine Instanz eines Businessobjektes und ka
     customer = order.get_attribute_by_name("customer", nuclos.customer)
     print(customer.name)
 
+Referenzfelder können wie normale Felder verändert werden.
+
+    john_doe = customer_bo.search_one("John Doe")
+    order.customer = john_doe
+    order.save()
+
 ## Metadaten
 
     #

@@ -607,6 +607,10 @@ class BusinessObjectInstance:
         return self._business_object.meta
 
     @property
+    def id(self):
+        return self._bo_id
+
+    @property
     def data(self):
         if not self._bo_id:
             raise NuclosException("Attempting to access data of an uninitialized business object instance.")
@@ -759,7 +763,18 @@ class BusinessObjectInstance:
         :param bo_attr_id: The attribute to set.
         :param value: The new value of the attribute.
         """
-        # TODO: Check for datatypes and similar?
+        attr = self._business_object.meta.get_attribute(bo_attr_id)
+        if attr is None:
+            raise AttributeError("Unknown attribute '{}'.".format(bo_attr_id))
+
+        if attr.is_reference and isinstance(value, BusinessObjectInstance):
+            # TODO: Check whether the value is an instance of the correct business object. Needs bo_id from the API.
+            value = {
+                "id": value.id,
+                "name": value.title
+            }
+
+        # TODO: Check whether the data type is correct. Automatically convert to a string if necessary.
         self._updated_attribute_data[bo_attr_id] = value
 
     def set_attribute_by_name(self, name, value):
