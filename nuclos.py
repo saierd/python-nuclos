@@ -582,8 +582,6 @@ class BusinessObject:
 
 
 class BusinessObjectInstance:
-    # TODO: Add new instances to a subform.
-
     # TODO: Status.
     # TODO: Process.
     # TODO: Document fields.
@@ -620,6 +618,10 @@ class BusinessObjectInstance:
         if not self._data:
             self._data = self._nuclos.request(self._url)
         return self._data
+
+    @property
+    def _is_initialized(self):
+        return not self._data is None
 
     @property
     def title(self):
@@ -753,6 +755,37 @@ class BusinessObjectInstance:
             return self._get_dependency_id_by_name(name.replace("_", " "))
         return None
 
+    def _get_dependency_bo(self, dependency_id):
+        meta = self._get_dependency_meta(dependency_id)
+        referenced_bo_id = meta["bo_meta"]["bo_meta_id"]
+        return self._nuclos.get_business_object(referenced_bo_id, False)
+
+    def create_dependency(self, dependency_id):
+        """
+        Create a new dependent instance.
+
+        :param dependency_id: The id of the dependency.
+        :return: A new instance.
+        """
+        dependency_bo = self._get_dependency_bo(dependency_id)
+        reffield_id = self._get_dependency_meta(dependency_id)["reffield_id"]
+
+        new_bo = dependency_bo.create()
+        new_bo.set_attribute(reffield_id, self)
+        return new_bo
+
+    def create_dependency_by_name(self, name):
+        """
+        Create a new dependent instance.
+
+        :param name: The name of the dependent business object.
+        :return: A new instance.
+        """
+        dependency_id = self._get_dependency_id_by_name(name)
+        if not dependency_id is None:
+            return self.create_dependency(dependency_id)
+        raise AttributeError("Unknown dependency '{}'.".format(name))
+
     def get_dependencies(self, dependency_id):
         """
         Get a list of referenced business objects.
@@ -760,12 +793,10 @@ class BusinessObjectInstance:
         :param dependency_id: The id of the dependency.
         :return: A list of referenced business objects.
         """
-        meta = self._get_dependency_meta(dependency_id)
-        referenced_bo_id = meta["bo_meta"]["bo_meta_id"]
-        referenced_bo = self._nuclos.get_business_object(referenced_bo_id, False)
+        dependency_bo = self._get_dependency_bo(dependency_id)
 
         refs = self._nuclos.request(self._dependency_list_url(dependency_id))
-        return [BusinessObjectInstance(self._nuclos, referenced_bo, bo["bo_id"]) for bo in refs["bos"]]
+        return [BusinessObjectInstance(self._nuclos, dependency_bo, bo["bo_id"]) for bo in refs["bos"]]
 
     def get_dependencies_by_name(self, name):
         """
@@ -849,6 +880,9 @@ class BusinessObjectInstance:
         """
         if not attr.is_writeable:
             return False
+        if not self._is_initialized:
+            # Can't check restrictions because the data is not initialized yet.
+            return True
         if attr.bo_attr_id in self.data["_restrictions"]:
             if self.data["_restrictions"][attr.bo_attr_id] == "nowrite":
                 return False
