@@ -4,10 +4,6 @@ Copyright (c) 2014-2015 Daniel Saier
 This project is licensed under the terms of the MIT license. See the LICENSE file.
 """
 
-# TODO: HTTPS Support.
-# TODO: Do not catch the NuclosHTTPException but let the user handle it instead? Write this down in the last part of
-# the documentation.
-
 import sys
 
 if sys.version_info[0] != 3 or sys.version_info[1] < 3:
@@ -690,9 +686,9 @@ class BusinessObjectInstance:
         return False
 
     def _update_data(self):
-        # TODO: Refactor this method.
-        # TODO: Change this to use the new format once it is implemented in Nuclos.
-        # See http://www.nuclos.de/de/forum/sonstiges/5348-rest-layout-bzw-bo-meta?start=6#6923
+        """
+        :return: The data to send to the server in order to update this instance.
+        """
         data = {
             "bo_meta_id": self._business_object.meta.bo_meta_id,
             "bo_values": self._updated_attribute_data
