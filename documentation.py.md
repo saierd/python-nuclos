@@ -170,6 +170,8 @@ Die Bibliothek wirft im Falle von Fehlern verschiedene Exceptions, die alle von 
 Falls der Login am Nuclos Server fehlschlägt oder dem angemeldeten Benutzer die Rechte für eine bestimmte Aktion fehlen
 wird eine `NuclosAuthenticationException` geworfen.
 
+Fall einem Attribut ein falscher Wert zugewiesen wird, wird eine `NuclosValueException` geworfen.
+
 Wenn die verwendete Version des Nuclos Servers ein bestimmtes Feature nicht unterstützt wird eine
 `NuclosVersionException` geworfen. 
 

@@ -103,6 +103,10 @@ class NuclosException(Exception):
     pass
 
 
+class NuclosValueException(NuclosException):
+    pass
+
+
 class NuclosAuthenticationException(NuclosException):
     pass
 
@@ -780,14 +784,19 @@ class BusinessObjectInstance:
         if value is None and not attr.is_nullable:
             raise NuclosAuthenticationException("Attribute '{}' is not nullable.".format(attr.name))
 
-        if attr.is_reference and isinstance(value, BusinessObjectInstance):
-            # TODO: Check whether the value is an instance of the correct business object. Needs bo_id from the API.
+        if attr.is_reference:
+            if not isinstance(value, BusinessObjectInstance):
+                raise NuclosValueException("Wrong value for reference attribute '{}'.".format(attr.name))
+
+            # TODO: Check whether the value is an instance of the correct business object. Needs the BO from the API.
             value = {
                 "id": value.id,
                 "name": value.title
             }
+        elif attr.type == "String" and not isinstance(value, str):
+            value = str(value)
 
-        # TODO: Check whether the data type is correct. Automatically convert to a string if necessary.
+        # TODO: Check whether the data type is correct.
         self._updated_attribute_data[bo_attr_id] = value
 
     def set_attribute_by_name(self, name, value):
