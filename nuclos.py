@@ -26,6 +26,9 @@ BO_LIST_ROUTE = "bo_metas"
 BO_META_ROUTE = "bo_metas/{}"
 BO_INSTANCE_LIST_ROUTE = "bo_metas/{}/bos"
 BO_INSTANCE_ROUTE = "bo_metas/{}/bos/{}"
+BO_DEPENDENCIES_ROUTE = "bo_metas/{}/bos/{}/dependencies"
+BO_DEPENDENCY_ROUTE = "bo_metas/{}/bos/{}/dependencies/{}"
+BO_DEPENDENCY_LIST_ROUTE = "bo_metas/{}/bos/{}/dependencies/{}/dep_bos"
 
 
 class NuclosSettings:
@@ -246,14 +249,15 @@ class NuclosAPI:
         return False
 
     @Cached
-    def get_business_object(self, bo_meta_id):
+    def get_business_object(self, bo_meta_id, check_existence=True):
         """
         Get a business object by its meta id.
 
         :param bo_meta_id: The meta id of the business object to find.
+        :param check_existence: Whether to check if the requested business object exists.
         :return: A BusinessObject object. None if the business object does not exist.
         """
-        if self._bo_meta_id_exists(bo_meta_id):
+        if not check_existence or self._bo_meta_id_exists(bo_meta_id):
             return BusinessObject(self, bo_meta_id)
         return None
 
@@ -578,9 +582,12 @@ class BusinessObject:
 
 
 class BusinessObjectInstance:
-    # TODO: Support getting and setting reference attributes and subforms.
     # TODO: Get a list of instances in subforms.
-    # TODO: Support status and process.
+    # TODO: Add new instances to a subform.
+
+    # TODO: Status.
+    # TODO: Process.
+    # TODO: Document fields.
     def __init__(self, nuclos, business_object, bo_id=None):
         self._nuclos = nuclos
         self._business_object = business_object
@@ -592,7 +599,6 @@ class BusinessObjectInstance:
         self._initialized = True
 
     @property
-    @Cached
     def _url(self):
         if not self._bo_id:
             raise NuclosException("Attempting to access data of an uninitialized business object instance.")
@@ -703,6 +709,76 @@ class BusinessObjectInstance:
             data["_flag"] = "update"
             data["bo_id"] = self._bo_id
         return data
+
+    @property
+    def _dependencies_url(self):
+        if not self._bo_id:
+            raise NuclosException("Attempting to access data of an uninitialized business object instance.")
+        return BO_DEPENDENCIES_ROUTE.format(self._business_object.bo_meta_id, self._bo_id)
+
+    def _dependency_url(self, dependency_id):
+        if not self._bo_id:
+            raise NuclosException("Attempting to access data of an uninitialized business object instance.")
+        return BO_DEPENDENCY_ROUTE.format(self._business_object.bo_meta_id, self._bo_id, dependency_id)
+
+    def _dependency_list_url(self, dependency_id):
+        if not self._bo_id:
+            raise NuclosException("Attempting to access data of an uninitialized business object instance.")
+        return BO_DEPENDENCY_LIST_ROUTE.format(self._business_object.bo_meta_id, self._bo_id, dependency_id)
+
+    @property
+    @Cached
+    def _dependency_metas(self):
+        deps = self._nuclos.request(self._dependencies_url)
+        metas = {}
+
+        for dep in deps:
+            metas[dep] = self._nuclos.request(self._dependency_url(dep))
+
+        return metas
+
+    def _get_dependency_meta(self, dependency_id):
+        if dependency_id in self._dependency_metas:
+            return self._dependency_metas[dependency_id]
+        raise AttributeError("Unknown dependency '{}'.".format(dependency_id))
+
+    def _get_dependency_id_by_name(self, name):
+        name = name.lower()
+
+        for dep in self._dependency_metas:
+            if self._get_dependency_meta(dep)["bo_meta"]["name"].lower() == name:
+                return dep
+
+        # Allow replacing spaces in attribute names by underscores.
+        if "_" in name:
+            return self._get_dependency_id_by_name(name.replace("_", " "))
+        return None
+
+    def get_dependencies(self, dependency_id):
+        """
+        Get a list of referenced business objects.
+
+        :param dependency_id: The id of the dependency.
+        :return: A list of referenced business objects.
+        """
+        meta = self._get_dependency_meta(dependency_id)
+        referenced_bo_id = meta["bo_meta"]["bo_meta_id"]
+        referenced_bo = self._nuclos.get_business_object(referenced_bo_id, False)
+
+        refs = self._nuclos.request(self._dependency_list_url(dependency_id))
+        return [BusinessObjectInstance(self._nuclos, referenced_bo, bo["bo_id"]) for bo in refs["bos"]]
+
+    def get_dependencies_by_name(self, name):
+        """
+        Get a list of dependent business objects by its name.
+
+        :param name: The name of the dependent business object.
+        :return: A list of referenced business objects.
+        """
+        dependency_id = self._get_dependency_id_by_name(name)
+        if not dependency_id is None:
+            return self.get_dependencies(dependency_id)
+        raise AttributeError("Unknown dependency '{}'.".format(name))
 
     def get_attribute(self, bo_attr_id, referenced_bo=None):
         """
