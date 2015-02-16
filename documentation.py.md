@@ -40,8 +40,8 @@ Mit der `get` Methode kann eine bestimmte Instanz geladen werden.
 
 Mit der `list` Methode erhält man eine Liste der Instanzen eines Businessobjektes.
 
-    customers = customer_bo.list()
-    customer = customers[0]
+    for customer in customer_bo.list():
+        print(customer.title)
 
 Mit verschiedenen Argumenten kann man das Verhalten der Methode beeinflussen und bspw. eine Sortierung einstellen.
 
@@ -126,20 +126,38 @@ anderen Felder.
 
 Das zurückgegebene Object ist wieder eine Instanz eines Businessobjektes und kann genau so verwendet werden.
 
-    customer = order.get_attribute_by_name("customer", nuclos.customer)
+    customer = order.get_attribute_by_name("customer", referenced_bo=nuclos.customer)
     print(customer.name)
 
-Referenzfelder können wie normale Felder verändert werden.
+Referenzfelder können wie normale Felder verändert werden. Dabei kann eine Instanz übergeben werden, auf die das
+Referenzfeld zeigen soll.
 
     john_doe = customer_bo.search_one("John Doe")
     order.customer = john_doe
     order.save()
 
+### Unterformulare
+
+    #
+
+Daten aus Unterformularen können nach dem selben Prinzip geladen werden wie Attribute.
+
+Dabei muss der Name des Businessobjektes verwendet werden, das die Einträge des Unterformulars bildet. Im Beispiel
+hat das Businessobjekt der Positionen den Namen `order position`.
+
+    positions = order.order_position
+              = order["order position"]
+              = order.get_dependencies_by_name("order_position")
+              = order.get_dependencies(<dependency_id>)
+
+    for pos in positions:
+        print(pos.title)
+
 ## Metadaten
 
     #
 
-Die `meta` Eigenschaft der Klasse `BusinessObject` enthält einige Metadaten.
+Die `meta` Eigenschaft der Klasse `BusinessObject` (und auch von Instanzen) enthält einige Metadaten.
 
     customer_bo.meta.name               # = "Customer"
     customer_bo.meta.bo_meta_id
