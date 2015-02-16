@@ -852,6 +852,14 @@ class BusinessObjectInstance:
         raise AttributeError("Unknown attribute '{}'.".format(name))
 
     def __getattr__(self, name):
+        # Allow creation of dependent objects with instance.create_<name>()
+        if name.startswith("create_"):
+            cname = name[7:]
+            if not self._get_dependency_id_by_name(cname) is None:
+                def create_dependency():
+                    return self.create_dependency_by_name(cname)
+                return create_dependency
+
         try:
             return self.get_attribute_by_name(name)
         except AttributeError as e:
