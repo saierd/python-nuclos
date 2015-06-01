@@ -3,7 +3,7 @@ Copyright (c) 2014-2015 Daniel Saier
 
 This project is licensed under the terms of the MIT license. See the LICENSE file.
 """
-__version__ = 1.0
+__version__ = "1.0"
 
 import sys
 
@@ -94,7 +94,7 @@ class Cached:
     def __call__(self, *args):
         if not isinstance(args, collections.Hashable):
             return self.f(*args)
-        if not args in self.cache:
+        if args not in self.cache:
             # noinspection PyArgumentList
             self.cache[args] = self.f(*args)
         return self.cache[args]
@@ -192,7 +192,7 @@ class NuclosAPI:
             return True
 
         answer = self.request(LOGOUT_ROUTE, method="DELETE", json_answer=False)
-        if not answer is None:
+        if answer is not None:
             self.session_id = None
             logging.info("Logged out from the Nuclos server.")
             return True
@@ -318,7 +318,7 @@ class NuclosAPI:
             request.add_header("Content-Type", "application/json")
         if method:
             request.method = method
-        if method and request.data and not method in ["POST", "PUT"]:
+        if method and request.data and method not in ["POST", "PUT"]:
             logging.warning("Overriding the POST method while sending data!")
         if self.session_id:
             request.add_header("sessionid", self.session_id)
@@ -623,7 +623,7 @@ class BusinessObjectInstance:
 
     @property
     def _is_initialized(self):
-        return not self._data is None
+        return self._data is not None
 
     @property
     def title(self):
@@ -784,7 +784,7 @@ class BusinessObjectInstance:
         :return: A new instance.
         """
         dependency_id = self._get_dependency_id_by_name(name)
-        if not dependency_id is None:
+        if dependency_id is not None:
             return self.create_dependency(dependency_id)
         raise AttributeError("Unknown dependency '{}'.".format(name))
 
@@ -808,7 +808,7 @@ class BusinessObjectInstance:
         :return: A list of referenced business objects.
         """
         dependency_id = self._get_dependency_id_by_name(name)
-        if not dependency_id is None:
+        if dependency_id is not None:
             return self.get_dependencies(dependency_id)
         raise AttributeError("Unknown dependency '{}'.".format(name))
 
@@ -832,7 +832,7 @@ class BusinessObjectInstance:
         if attr is None:
             raise AttributeError("Unknown attribute '{}'.".format(bo_attr_id))
 
-        if attr.is_reference and not data is None:
+        if attr.is_reference and data is not None:
             if referenced_bo:
                 return referenced_bo.get(data["id"])
             raise NuclosVersionException("This version of Nuclos does not support loading reference fields. "
@@ -860,6 +860,7 @@ class BusinessObjectInstance:
             if not self._get_dependency_id_by_name(cname) is None:
                 def create_dependency():
                     return self.create_dependency_by_name(cname)
+
                 return create_dependency
 
         try:
@@ -946,7 +947,7 @@ class BusinessObjectInstance:
         raise AttributeError("Unknown attribute '{}'.".format(name))
 
     def __setattr__(self, name, value):
-        if not "_initialized" in self.__dict__ or name in self.__dict__:
+        if "_initialized" not in self.__dict__ or name in self.__dict__:
             super().__setattr__(name, value)
         else:
             self.set_attribute_by_name(name, value)
