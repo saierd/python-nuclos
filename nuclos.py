@@ -3,6 +3,7 @@ Copyright (c) 2014-2015 Daniel Saier
 
 This project is licensed under the terms of the MIT license. See the LICENSE file.
 """
+__version__ = 1.0
 
 import sys
 
@@ -915,6 +916,7 @@ class BusinessObjectInstance:
             raise NuclosAuthenticationException("Attribute '{}' is not nullable.".format(attr.name))
 
         if attr.is_reference:
+            # TODO: Allow None as a value.
             if not isinstance(value, BusinessObjectInstance):
                 raise NuclosValueException("Wrong value for reference attribute '{}'.".format(attr.name))
 
@@ -924,6 +926,7 @@ class BusinessObjectInstance:
                 "name": value.title
             }
         elif attr.type == "String" and not isinstance(value, str):
+            # TODO: Do not convert None to "None".
             value = str(value)
 
         # TODO: Check whether the data type is correct.
