@@ -461,6 +461,16 @@ class AttributeMeta:
     def bo_attr_id(self):
         return self._data["boAttrId"]
 
+    def data_index(self):
+        """
+        :return: The key of the data dictionary used for this attribute.
+        """
+        data_index = self.bo_attr_id
+        if data_index.startswith(self._business_object.bo_meta_id):
+            data_index = data_index[len(self._business_object.bo_meta_id) + 1:]
+
+        return data_index
+
     @property
     def type(self):
         return self._data["type"]
@@ -814,20 +824,19 @@ class BusinessObjectInstance:
         :return: The attribute's value.
         :raise: AttributeError if the attribute does not exist.
         """
-        data_index = bo_attr_id
-        if data_index.startswith(self._business_object.bo_meta_id):
-            data_index = data_index[len(self._business_object.bo_meta_id) + 1:]
+        attr = self._business_object.meta.get_attribute(bo_attr_id)
+        if attr is None:
+            raise AttributeError("Unknown attribute '{}'.".format(bo_attr_id))
 
-        data = None
+        data_index = attr.data_index()
+
         if data_index in self._updated_attribute_data:
             # There is unsaved local data for this attribute.
             data = self._updated_attribute_data[data_index]
         elif data_index in self.data["attributes"]:
             data = self.data["attributes"][data_index]
-
-        attr = self._business_object.meta.get_attribute(bo_attr_id)
-        if attr is None:
-            raise AttributeError("Unknown attribute '{}'.".format(bo_attr_id))
+        else:
+            raise AttributeError("No data for attribute '{}'.".format(bo_attr_id))
 
         if attr.is_reference and data is not None:
             return attr.referenced_bo().get(data["id"])
@@ -924,7 +933,7 @@ class BusinessObjectInstance:
             value = str(value)
 
         # TODO: Check whether the data type is correct.
-        self._updated_attribute_data[bo_attr_id] = value
+        self._updated_attribute_data[attr.data_index()] = value
 
     def set_attribute_by_name(self, name, value):
         """
