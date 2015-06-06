@@ -3,6 +3,7 @@ Copyright (c) 2014-2015 Daniel Saier
 
 This project is licensed under the terms of the MIT license. See the LICENSE file.
 """
+# TODO: Bump to 1.1 when the new APIs of Nuclos 4.5 is supported.
 __version__ = "1.0"
 
 import sys
@@ -23,13 +24,10 @@ VERSION_ROUTE = "version"
 DB_VERSION_ROUTE = "dbversion"
 LOGIN_ROUTE = ""
 LOGOUT_ROUTE = ""
-BO_LIST_ROUTE = "bo_metas"
-BO_META_ROUTE = "bo_metas/{}"
-BO_INSTANCE_LIST_ROUTE = "bo_metas/{}/bos"
-BO_INSTANCE_ROUTE = "bo_metas/{}/bos/{}"
-BO_DEPENDENCIES_ROUTE = "bo_metas/{}/bos/{}/dependencies"
-BO_DEPENDENCY_ROUTE = "bo_metas/{}/bos/{}/dependencies/{}"
-BO_DEPENDENCY_LIST_ROUTE = "bo_metas/{}/bos/{}/dependencies/{}/dep_bos"
+BO_LIST_ROUTE = "bos"
+BO_META_ROUTE = "boMetas/{}"
+BO_INSTANCE_LIST_ROUTE = "bos/{}"
+BO_INSTANCE_ROUTE = "bos/{}/{}"
 
 
 class NuclosSettings:
@@ -166,8 +164,8 @@ class NuclosAPI:
         :raises: NuclosVersionException if the server version is too low to use the API.
         :raises: NuclosAuthenticationException if the login was not successful.
         """
-        if not self.require_version(4, 3):
-            raise NuclosVersionException("You need at least Nuclos 4.3 to use this version of the REST API.")
+        if not self.require_version(4, 5):
+            raise NuclosVersionException("You need at least Nuclos 4.5 to use this version of the REST API.")
 
         login_data = {
             "username": self.settings.username,
@@ -177,7 +175,7 @@ class NuclosAPI:
 
         answer = self.request(LOGIN_ROUTE, data=login_data, auto_login=False)
         if answer:
-            self.session_id = answer["session_id"]
+            self.session_id = answer["sessionId"]
             logging.info("Logging in to the Nuclos server.")
         else:
             raise NuclosAuthenticationException("Login failed!")
@@ -228,7 +226,7 @@ class NuclosAPI:
         if self._business_objects:
             for bo in self._business_objects:
                 if bo["name"].lower() == name:
-                    return bo["bo_meta_id"]
+                    return bo["boMetaId"]
 
         # Allow replacing spaces in the name by underscores.
         if "_" in name:
@@ -245,7 +243,7 @@ class NuclosAPI:
         """
         if self._business_objects:
             for bo in self._business_objects:
-                if bo["bo_meta_id"] == bo_meta_id:
+                if bo["boMetaId"] == bo_meta_id:
                     return True
         return False
 
@@ -291,7 +289,7 @@ class NuclosAPI:
     @property
     @Cached
     def business_objects(self):
-        return [self.get_business_object(bo["bo_meta_id"]) for bo in self._business_objects]
+        return [self.get_business_object(bo["boMetaId"]) for bo in self._business_objects]
 
     def request(self, path, parameters=None, data=None, method=None, auto_login=True, json_answer=True):
         """
@@ -456,7 +454,7 @@ class AttributeMeta:
 
     @property
     def bo_attr_id(self):
-        return self._data["bo_attr_id"]
+        return self._data["boAttrId"]
 
     @property
     def type(self):
@@ -536,7 +534,7 @@ class BusinessObject:
 
         data = self._nuclos.request(BO_INSTANCE_LIST_ROUTE.format(self.bo_meta_id), parameters=parameters)
 
-        return [self.get(bo["bo_id"]) for bo in data["bos"]]
+        return [self.get(bo["boId"]) for bo in data["bos"]]
 
     def get_one(self, *args, **kwargs):
         """
@@ -627,7 +625,7 @@ class BusinessObjectInstance:
 
     @property
     def title(self):
-        return self.data["_title"]
+        return self.data["title"]
 
     def is_new(self):
         return self._bo_id is None
@@ -703,8 +701,8 @@ class BusinessObjectInstance:
         :return: The data to send to the server in order to update this instance.
         """
         data = {
-            "bo_meta_id": self._business_object.meta.bo_meta_id,
-            "bo_values": self._updated_attribute_data
+            "boMetaId": self._business_object.meta.bo_meta_id,
+            "boValues": self._updated_attribute_data
         }
         if self.is_new():
             data["_flag"] = "insert"
@@ -714,29 +712,13 @@ class BusinessObjectInstance:
         return data
 
     @property
-    def _dependencies_url(self):
-        if not self._bo_id:
-            raise NuclosException("Attempting to access data of an uninitialized business object instance.")
-        return BO_DEPENDENCIES_ROUTE.format(self._business_object.bo_meta_id, self._bo_id)
-
-    def _dependency_url(self, dependency_id):
-        if not self._bo_id:
-            raise NuclosException("Attempting to access data of an uninitialized business object instance.")
-        return BO_DEPENDENCY_ROUTE.format(self._business_object.bo_meta_id, self._bo_id, dependency_id)
-
-    def _dependency_list_url(self, dependency_id):
-        if not self._bo_id:
-            raise NuclosException("Attempting to access data of an uninitialized business object instance.")
-        return BO_DEPENDENCY_LIST_ROUTE.format(self._business_object.bo_meta_id, self._bo_id, dependency_id)
-
-    @property
     @Cached
     def _dependency_metas(self):
-        deps = self._nuclos.request(self._dependencies_url)
+        deps = self.data["subBos"]
         metas = {}
 
         for dep in deps:
-            metas[dep] = self._nuclos.request(self._dependency_url(dep))
+            metas[dep] = self._nuclos.request(deps[dep]["links"]["boMeta"]["href"])
 
         return metas
 
@@ -749,7 +731,7 @@ class BusinessObjectInstance:
         name = name.lower()
 
         for dep in self._dependency_metas:
-            if self._get_dependency_meta(dep)["bo_meta"]["name"].lower() == name:
+            if self._get_dependency_meta(dep)["boMeta"]["name"].lower() == name:
                 return dep
 
         # Allow replacing spaces in attribute names by underscores.
@@ -759,8 +741,8 @@ class BusinessObjectInstance:
 
     def _get_dependency_bo(self, dependency_id):
         meta = self._get_dependency_meta(dependency_id)
-        referenced_bo_id = meta["bo_meta"]["bo_meta_id"]
-        return self._nuclos.get_business_object(referenced_bo_id, False)
+        referenced_bo_id = meta["boMeta"]["boMetaId"]
+        return self._nuclos.get_business_object(referenced_bo_id, check_existence=False)
 
     def create_dependency(self, dependency_id):
         """
@@ -770,7 +752,7 @@ class BusinessObjectInstance:
         :return: A new instance.
         """
         dependency_bo = self._get_dependency_bo(dependency_id)
-        reffield_id = self._get_dependency_meta(dependency_id)["reffield_id"]
+        reffield_id = self._get_dependency_meta(dependency_id)["reffieldId"]
 
         new_bo = dependency_bo.create()
         new_bo.set_attribute(reffield_id, self)
@@ -798,7 +780,7 @@ class BusinessObjectInstance:
         dependency_bo = self._get_dependency_bo(dependency_id)
 
         refs = self._nuclos.request(self._dependency_list_url(dependency_id))
-        return [BusinessObjectInstance(self._nuclos, dependency_bo, bo["bo_id"]) for bo in refs["bos"]]
+        return [BusinessObjectInstance(self._nuclos, dependency_bo, bo["boId"]) for bo in refs["bos"]]
 
     def get_dependencies_by_name(self, name):
         """
@@ -825,8 +807,8 @@ class BusinessObjectInstance:
         if bo_attr_id in self._updated_attribute_data:
             # There is unsaved local data for this attribute.
             data = self._updated_attribute_data[bo_attr_id]
-        elif bo_attr_id in self.data["bo_values"]:
-            data = self.data["bo_values"][bo_attr_id]
+        elif bo_attr_id in self.data["attributes"]:
+            data = self.data["attributes"][bo_attr_id]
 
         attr = self._business_object.meta.get_attribute(bo_attr_id)
         if attr is None:
