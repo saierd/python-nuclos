@@ -374,6 +374,10 @@ class BusinessObjectMeta:
         self.bo_meta_id = bo_meta_id
 
     @property
+    def nuclos(self):
+        return self._nuclos
+
+    @property
     @Cached
     def _data(self):
         return self._nuclos.request(BO_META_ROUTE.format(self.bo_meta_id))
@@ -397,7 +401,7 @@ class BusinessObjectMeta:
     @property
     @Cached
     def attributes(self):
-        return [AttributeMeta(a) for a in self._data["attributes"].values()]
+        return [AttributeMeta(self, a) for a in self._data["attributes"].values()]
 
     def get_attribute(self, bo_attr_id):
         """
@@ -445,7 +449,8 @@ class BusinessObjectMeta:
 
 
 class AttributeMeta:
-    def __init__(self, data):
+    def __init__(self, business_object, data):
+        self._business_object = business_object
         self._data = data
 
     @property
@@ -475,6 +480,13 @@ class AttributeMeta:
     @property
     def is_reference(self):
         return self._data["reference"]
+
+    @property
+    def _referenced_bo_id(self):
+        return self._data["referencingBoMetaId"]
+
+    def referenced_bo(self):
+        return self._business_object.nuclos.get_business_object(self._referenced_bo_id)
 
 
 class BusinessObject:
@@ -794,12 +806,11 @@ class BusinessObjectInstance:
             return self.get_dependencies(dependency_id)
         raise AttributeError("Unknown dependency '{}'.".format(name))
 
-    def get_attribute(self, bo_attr_id, referenced_bo=None):
+    def get_attribute(self, bo_attr_id):
         """
         Get the value of an attribute.
 
         :param bo_attr_id: The attribute id to get the value of.
-        :param referenced_bo: The business object which is referenced by this attribute.
         :return: The attribute's value.
         :raise: AttributeError if the attribute does not exist.
         """
@@ -815,24 +826,20 @@ class BusinessObjectInstance:
             raise AttributeError("Unknown attribute '{}'.".format(bo_attr_id))
 
         if attr.is_reference and data is not None:
-            if referenced_bo:
-                return referenced_bo.get(data["id"])
-            raise NuclosVersionException("This version of Nuclos does not support loading reference fields. "
-                                         "Please provide the business object this attribute references.")
+            return attr.referenced_bo().get(data["id"])
         return data
 
-    def get_attribute_by_name(self, name, referenced_bo=None):
+    def get_attribute_by_name(self, name):
         """
         Get the value of an attribute by its name.
 
         :param name: The name of the attribute to search.
-        :param referenced_bo: The business object which is referenced by this attribute.
         :return: The attribute value.
         :raise: AttributeError if the attribute does not exist.
         """
         attr = self._business_object.meta.get_attribute_by_name(name)
         if attr:
-            return self.get_attribute(attr.bo_attr_id, referenced_bo=referenced_bo)
+            return self.get_attribute(attr.bo_attr_id)
         raise AttributeError("Unknown attribute '{}'.".format(name))
 
     def __getattr__(self, name):

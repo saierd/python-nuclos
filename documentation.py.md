@@ -118,16 +118,10 @@ Die `delete` Methode löscht die Instanz.
 
     #
 
-Beim Auslesen von Referenzfeldern muss man beachten, dass es in der Nuclos API derzeit keine Möglichkeit gibt, das
-referenzierte Businessobjekt herauszufinden. Dieses muss daher explizit angegeben werden.
+Referenzierte Objekte können wie normale Attribute verwendet werden. Das zurückgegebene Object ist wieder eine Instanz
+eines Businessobjektes und kann genau so verwendet werden.
 
-Sobald die API diese Information liefert wird es ein Update geben, womit Referenzfelder genauso funktionieren wie alle
-anderen Felder.
-
-Das zurückgegebene Object ist wieder eine Instanz eines Businessobjektes und kann genau so verwendet werden.
-
-    customer = order.get_attribute_by_name("customer", referenced_bo=nuclos.customer)
-    print(customer.name)
+    print(order.customer.name)
 
 Referenzfelder können wie normale Felder verändert werden. Dabei kann eine Instanz übergeben werden, auf die das
 Referenzfeld zeigen soll.
