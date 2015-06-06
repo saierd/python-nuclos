@@ -814,12 +814,16 @@ class BusinessObjectInstance:
         :return: The attribute's value.
         :raise: AttributeError if the attribute does not exist.
         """
+        data_index = bo_attr_id
+        if data_index.startswith(self._business_object.bo_meta_id):
+            data_index = data_index[len(self._business_object.bo_meta_id) + 1:]
+
         data = None
-        if bo_attr_id in self._updated_attribute_data:
+        if data_index in self._updated_attribute_data:
             # There is unsaved local data for this attribute.
-            data = self._updated_attribute_data[bo_attr_id]
-        elif bo_attr_id in self.data["attributes"]:
-            data = self.data["attributes"][bo_attr_id]
+            data = self._updated_attribute_data[data_index]
+        elif data_index in self.data["attributes"]:
+            data = self.data["attributes"][data_index]
 
         attr = self._business_object.meta.get_attribute(bo_attr_id)
         if attr is None:
