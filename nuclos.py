@@ -28,6 +28,7 @@ BO_LIST_ROUTE = "bos"
 BO_META_ROUTE = "boMetas/{}"
 BO_INSTANCE_LIST_ROUTE = "bos/{}"
 BO_INSTANCE_ROUTE = "bos/{}/{}"
+BO_DEPENDENCY_LIST_ROUTE = "/bos/{}/{}/subBos/{}"
 
 
 class NuclosSettings:
@@ -307,7 +308,9 @@ class NuclosAPI:
         if not self.session_id and auto_login:
             self.login()
 
-        url = self._build_url(path, parameters)
+        url = path
+        if not url.startswith("http"):
+            url = self._build_url(path, parameters)
         request = urllib.request.Request(url)
         if json_answer:
             request.add_header("Accept", "application/json")
@@ -733,6 +736,11 @@ class BusinessObjectInstance:
             data["bo_id"] = self._bo_id
         return data
 
+    def _dependency_list_url(self, dependency_id):
+        if not self._bo_id:
+            raise NuclosException("Attempting to access data of an uninitialized business object instance.")
+        return BO_DEPENDENCY_LIST_ROUTE.format(self._business_object.bo_meta_id, self._bo_id, dependency_id)
+
     @property
     @Cached
     def _dependency_metas(self):
@@ -753,7 +761,7 @@ class BusinessObjectInstance:
         name = name.lower()
 
         for dep in self._dependency_metas:
-            if self._get_dependency_meta(dep)["boMeta"]["name"].lower() == name:
+            if self._get_dependency_meta(dep)["name"].lower() == name:
                 return dep
 
         # Allow replacing spaces in attribute names by underscores.
@@ -763,8 +771,8 @@ class BusinessObjectInstance:
 
     def _get_dependency_bo(self, dependency_id):
         meta = self._get_dependency_meta(dependency_id)
-        referenced_bo_id = meta["boMeta"]["boMetaId"]
-        return self._nuclos.get_business_object(referenced_bo_id, check_existence=False)
+        referenced_bo_id = meta["boMetaId"]
+        return self._nuclos.get_business_object(referenced_bo_id, False)
 
     def create_dependency(self, dependency_id):
         """
