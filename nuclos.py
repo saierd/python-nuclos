@@ -379,6 +379,9 @@ class BusinessObjectMeta:
     def __eq__(self, other):
         return self.bo_meta_id == other.bo_meta_id
 
+    def __ne__(self, other):
+        return not (self == other)
+
     @property
     def nuclos(self):
         return self._nuclos
@@ -518,6 +521,9 @@ class BusinessObject:
     def __eq__(self, other):
         return self.bo_meta_id == other.bo_meta_id
 
+    def __ne__(self, other):
+        return not (self == other)
+
     def get(self, bo_id=None):
         """
         Get the instance with the given id.
@@ -642,6 +648,9 @@ class BusinessObjectInstance:
 
     def __eq__(self, other):
         return self.meta == other.meta and self.id == other.id
+
+    def __ne__(self, other):
+        return not (self == other)
 
     @property
     def data(self):
