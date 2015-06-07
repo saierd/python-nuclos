@@ -391,15 +391,18 @@ class BusinessObjectMeta:
 
     @property
     def can_update(self):
-        return self._data["update"]
+        # TODO: This data is currently not available.
+        return True
 
     @property
     def can_insert(self):
-        return self._data["insert"]
+        # TODO: This data is currently not available.
+        return True
 
     @property
     def can_delete(self):
-        return self._data["delete"]
+        # TODO: This data is currently not available.
+        return True
 
     @property
     @Cached
