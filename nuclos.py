@@ -905,7 +905,7 @@ class BusinessObjectInstance:
             # Can't check restrictions because the data is not initialized yet.
             return True
 
-        if attr.bo_attr_id in self.data["attrRrestrictions"]:
+        if attr.bo_attr_id in self.data["attrRestrictions"]:
             if self.data["attrRestrictions"][attr.bo_attr_id] == "readonly":
                 return False
         return True
@@ -931,6 +931,10 @@ class BusinessObjectInstance:
             # TODO: Allow None as a value.
             if not isinstance(value, BusinessObjectInstance):
                 raise NuclosValueException("Wrong value for reference attribute '{}'.".format(attr.name))
+            if attr.referenced_bo().bo_meta_id != value._business_object.bo_meta_id:
+                raise NuclosValueException(
+                    "Wrong value for reference attribute '{}', expected a business object of type '{}'.".format(
+                        attr.name, attr.referenced_bo().bo_meta_id))
 
             # TODO: Check whether the value is an instance of the correct business object. Needs the BO from the API.
             value = {
