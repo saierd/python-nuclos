@@ -904,8 +904,9 @@ class BusinessObjectInstance:
         if not self._is_initialized:
             # Can't check restrictions because the data is not initialized yet.
             return True
-        if attr.bo_attr_id in self.data["_restrictions"]:
-            if self.data["_restrictions"][attr.bo_attr_id] == "nowrite":
+
+        if attr.bo_attr_id in self.data["attrRrestrictions"]:
+            if self.data["attrRestrictions"][attr.bo_attr_id] == "readonly":
                 return False
         return True
 
