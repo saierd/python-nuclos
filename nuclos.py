@@ -30,6 +30,7 @@ BO_META_ROUTE = "boMetas/{}"
 BO_INSTANCE_LIST_ROUTE = "bos/{}"
 BO_INSTANCE_ROUTE = "bos/{}/{}"
 BO_DEPENDENCY_LIST_ROUTE = "/bos/{}/{}/subBos/{}"
+STATE_CHANGE_ROUTE = "/boStateChanges/{}/{}/{}"
 
 
 class NuclosSettings:
@@ -663,6 +664,58 @@ class BusinessObjectInstance:
     @property
     def title(self):
         return self.data["title"]
+
+    @property
+    def current_state_name(self):
+        try:
+            return self.data["attributes"]["nuclosState"]["name"]
+        except IndexError:
+            return None
+
+    @property
+    def current_state_number(self):
+        try:
+            return self.data["attributes"]["nuclosStateNumber"]
+        except IndexError:
+            return None
+
+    def _get_state_id(self, number):
+        for next_state in self.data["nextStates"]:
+            if next_state["number"] == number:
+                return next_state["nuclosStateId"]
+        raise NuclosValueException("Unknown state '{}'.".format(number))
+
+    def _get_state_id_by_name(self, name):
+        name = name.lower()
+
+        for next_state in self.data["nextStates"]:
+            if next_state["name"].lower() == name:
+                return next_state["nuclosStateId"]
+        raise NuclosValueException("Unknown state '{}'.".format(name))
+
+    def _change_to_state(self, state_id):
+        url = STATE_CHANGE_ROUTE.format(self._business_object.bo_meta_id, self.id, state_id)
+        self._nuclos.request(url, json_answer=False)
+
+        self.refresh()
+
+    def change_to_state(self, number):
+        """
+        Change the current state to another one given by its number. This will refresh the instance, unsaved changes
+        will be discarded.
+
+        :param number: The number of the state.
+        """
+        self._change_to_state(self._get_state_id(number))
+
+    def change_to_state_by_name(self, name):
+        """
+        Change the current state to another one given by its name. This will refresh the instance, unsaved changes
+        will be discarded.
+
+        :param name: The name of the state.
+        """
+        self._change_to_state(self._get_state_id_by_name(name))
 
     def is_new(self):
         return self._bo_id is None

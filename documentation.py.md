@@ -130,6 +130,8 @@ Referenzfeld zeigen soll.
     order.customer = john_doe
     order.save()
 
+Durch Zuweisen von `None` kann die Referenz entfernt werden.
+
 ### Unterformulare
 
     #
@@ -157,6 +159,23 @@ Unterformular erzeugt.
                  = order.create_dependency_by_name("order position")
     new_position.article = ...
     new_position.save()
+
+### Status
+
+    #
+
+Man kann den aktuellen Status einer Instanz über folgende spezielle Attribute auslesen:
+
+    john_doe.current_state_name         # = "Active"
+    john_doe.current_state_number       # = 10
+
+Man kann den Status auch ändern, wahlweise über dessen Nummer oder Namen.
+
+Dabei ist zu beachten, dass die Instanz automatisch aktualisiert wird. Nicht gespeicherte Änderungen gehen
+dabei verloren.
+
+    john_doe.change_to_state(99)
+    john_doe.change_to_state("Inactive")
 
 ## Metadaten
 
