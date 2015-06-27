@@ -3,8 +3,7 @@ Copyright (c) 2014-2015 Daniel Saier
 
 This project is licensed under the terms of the MIT license. See the LICENSE file.
 """
-# TODO: Bump to 1.1 when the new APIs of Nuclos 4.5 is supported.
-__version__ = "1.0"
+__version__ = "1.1"
 
 import sys
 
@@ -619,10 +618,10 @@ class BusinessObject:
 
 
 class BusinessObjectInstance:
-    # TODO: Status.
     # TODO: Process.
     # TODO: Document fields.
     # TODO: Call business rules.
+    # TODO: Generators.
     def __init__(self, nuclos, business_object, bo_id=None):
         self._nuclos = nuclos
         self._business_object = business_object
