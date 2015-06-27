@@ -1,6 +1,6 @@
 # python-nuclos
 
-A Python library for the REST API of [Nuclos](http://www.nuclos.de/). You can find the documentation [here](http://saierd.bitbucket.org/python-nuclos/).
+A Python library for the REST API of [Nuclos](http://www.nuclos.de/). You can find the documentation [here](http://saierd.github.io/python-nuclos/).
 
 | Version                                                         | Compatible Nuclos versions | Download |
 | --------------------------------------------------------------- | -------------------------- | -------- |
