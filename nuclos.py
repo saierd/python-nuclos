@@ -938,22 +938,27 @@ class BusinessObjectInstance:
             raise NuclosAuthenticationException("Attribute '{}' is not nullable.".format(attr.name))
 
         if attr.is_reference:
-            # TODO: Allow None as a value.
-            if not isinstance(value, BusinessObjectInstance):
-                raise NuclosValueException("Wrong value for reference attribute '{}'.".format(attr.name))
-            if attr.referenced_bo().bo_meta_id != value._business_object.bo_meta_id:
-                raise NuclosValueException(
-                    "Wrong value for reference attribute '{}', expected a business object of type '{}'.".format(
-                        attr.name, attr.referenced_bo().bo_meta_id))
+            if value is None:
+                value = {
+                    "id": None,
+                    "name": ""
+                }
+            else:
+                if not isinstance(value, BusinessObjectInstance):
+                    raise NuclosValueException("Wrong value for reference attribute '{}'.".format(attr.name))
+                if attr.referenced_bo().bo_meta_id != value._business_object.bo_meta_id:
+                    raise NuclosValueException(
+                        "Wrong value for reference attribute '{}', expected a business object of type '{}'.".format(
+                            attr.name, attr.referenced_bo().bo_meta_id))
 
-            # TODO: Check whether the value is an instance of the correct business object. Needs the BO from the API.
-            value = {
-                "id": value.id,
-                "name": value.title
-            }
+                value = {
+                    "id": value.id,
+                    "name": value.title
+                }
         elif attr.type == "String" and not isinstance(value, str):
-            # TODO: Do not convert None to "None".
-            value = str(value)
+            # Don't convert None to "None".
+            if value is not None:
+                value = str(value)
 
         # TODO: Check whether the data type is correct.
         self._updated_attribute_data[attr.data_index()] = value
