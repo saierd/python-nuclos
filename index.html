@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>python-nuclos</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+    <ul class="sections">
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <h1 id="python-nuclos">python-nuclos</h1>
+<p>Eine Python Bibliothek für die REST API von <a href="http://www.nuclos.de/">Nuclos</a>.</p>
+<p>Der Quellcode kann von <a href="https://github.com/saierd/python-nuclos">Github</a> heruntergeladen werden. Es wird
+mindestens Nuclos 4.3 benötigt, da mit dieser Version die aktuelle Variante der API eingeführt wurde. Durch Änderungen
+an der API sind leider nicht alle Nuclos Versionen kompatibel. Eine genaue Aufstellung der Nuclos Version und der
+dazu passenden Bibliotheksversion finden Sie im Readme.</p>
+<p>Außerdem wird mindestens Python 3.3 benötigt, Python 2 wird nicht unterstützt.</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Die Datei <code>nuclos.py</code> sollte sich im selben Ordner befinden, wie das Python Script, das sie verwenden soll.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">from</span> nuclos <span class="hljs-keyword">import</span> NuclosAPI</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Um die Verbindung mit einem Nuclos Server herzustellen werden die Verbindungsdaten aus einer <code>ini</code>-Datei gelesen. In
+der im Quellcode enthaltenen <code>default.ini</code> sind alle verfügbaren Parameter und ihre Standardwerte angegeben.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>nuclos = NuclosAPI(<span class="hljs-string">"settings.ini"</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <h2 id="businessobjekte">Businessobjekte</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Nun kann auf die Businessobjekte zugegriffen werden. Am einfachsten geht das, indem der Name eines Businessobjekes als
+Eigenschaft der Klasse <code>NuclosAPI</code> verwendet wird.</p>
+<p>Dabei ist die Groß- und Kleinschreibung egal. Ein Leerzeichen im Namen eines Businessobjektes kann durch einen
+Unterstrich ersetzt werden.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>customer_bo = nuclos.customer
+            = nuclos[<span class="hljs-string">"customer"</span>]
+            = nuclos.get_business_object_by_name(<span class="hljs-string">"customer"</span>)
+            = nuclos.get_business_object(&lt;bo_meta_id&gt;)
+
+nuclos.business_objects             <span class="hljs-comment"># = [&lt;customer_bo&gt;, ...]</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Mit der <code>get</code> Methode kann eine bestimmte Instanz geladen werden.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>customer = customer_bo.get(&lt;bo_id&gt;)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Mit der <code>list</code> Methode erhält man eine Liste der Instanzen eines Businessobjektes.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">for</span> customer <span class="hljs-keyword">in</span> customer_bo.list():
+    print(customer.title)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Mit verschiedenen Argumenten kann man das Verhalten der Methode beeinflussen und bspw. eine Sortierung einstellen.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>customer_bo.list(offset=<span class="hljs-number">10</span>, limit=<span class="hljs-number">20</span>)
+
+customer_bo.list(sort=customer_bo.meta.city)
+customer_bo.list(sort=<span class="hljs-string">"city"</span>)
+customer_bo.list(sort_by_title=<span class="hljs-keyword">True</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Die <code>search</code> Methode sucht nach Instanzen, in denen ein bestimmter Text vorkommt. Sie akzeptiert alle Argumente, die
+auch <code>list</code> akzeptiert.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>customers = customer_bo.search(<span class="hljs-string">"Doe"</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>Für <code>list</code> und <code>search</code> gibt es auch entsprechende Methoden, die nur den ersten Treffer zurückgeben.</p>
+<p>Beide Methoden akzeptieren die selben Argumente wie <code>list</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>customer = customer_bo.get_one()
+         = customer_bo.search_one(<span class="hljs-string">"Doe"</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>Die <code>create</code> Methode erzeugt eine neue Instanz. Diese wird nicht in Nuclos gespeichert, bis die <code>save</code> Methode
+aufgerufen wird. In dieser Zeit kann die Instanz nur eingeschränkt verwendet werden.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>new_customer = customer_bo.create()
+new_customer.name = <span class="hljs-string">"John Doe"</span>
+new_customer.save()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <h2 id="instanzen-von-businessobjekten">Instanzen von Businessobjekten</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>Der Titel einer Instanz kann über die Eigenschaft <code>title</code> ausgelesen werden.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>customer.title                      <span class="hljs-comment"># = "John Doe"</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>Die Attribute eines Instanz können gelesen werden, wie oben die Businessobjekte aus dem API Objekt.</p>
+<p>Auch hier ist die Groß- und Kleinschreibung egal. Leerzeichen können wieder durch einen Unterstrich ersetzt werden.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>email = customer.email
+      = customer[<span class="hljs-string">"email"</span>]
+      = customer.get_attribute_by_name(<span class="hljs-string">"email"</span>)
+      = customer.get_attribute(&lt;bo_attr_id&gt;)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <h3 id="ver-ndern-von-daten">Verändern von Daten</h3>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>Nach dem selben Prinzip können den Attributen neue Werte zugewiesen werden.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>customer.email = <span class="hljs-string">"john@doe.com"</span>
+customer[<span class="hljs-string">"email"</span>] = <span class="hljs-string">"john@doe.com"</span>
+customer.set_attribute_by_name(<span class="hljs-string">"email"</span>, <span class="hljs-string">"john@doe.com"</span>)
+customer.set_attribute(&lt;bo_attr_id&gt;, <span class="hljs-string">"john@doe.com"</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>Veränderte Werte von Attributen lassen sich auf der lokalen Instanz sofort wieder auslesen, werden aber erst durch
+einen Aufruf der <code>save</code> Methode auf dem Nuclos Server abgespeichert.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>customer.save()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>Die <code>refresh</code> Methode sorgt dafür, dass die Daten der Instanz neu vom Server geladen werden. Das ist normalerweise nur
+dann nötig, wenn ein anderer Benutzer die selbe Instanz zwischenzeitlich verändert hat.</p>
+<p>Der Aufruf verwirft außerdem alle ungespeicherten Änderungen von Attributen.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>customer.refresh()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>Die <code>delete</code> Methode löscht die Instanz.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>customer.delete()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <h3 id="referenzfelder">Referenzfelder</h3>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>Referenzierte Objekte können wie normale Attribute verwendet werden. Das zurückgegebene Object ist wieder eine Instanz
+eines Businessobjektes und kann genau so verwendet werden.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>print(order.customer.name)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>Referenzfelder können wie normale Felder verändert werden. Dabei kann eine Instanz übergeben werden, auf die das
+Referenzfeld zeigen soll.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>john_doe = customer_bo.search_one(<span class="hljs-string">"John Doe"</span>)
+order.customer = john_doe
+order.save()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p>Durch Zuweisen von <code>None</code> kann die Referenz entfernt werden.</p>
+<h3 id="unterformulare">Unterformulare</h3>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>
+              <p>Daten aus Unterformularen können nach dem selben Prinzip geladen werden wie Attribute.</p>
+<p>Dabei muss der Name des Businessobjektes verwendet werden, das die Einträge des Unterformulars bildet. Im Beispiel
+hat das Businessobjekt der Positionen den Namen <code>order position</code>.</p>
+<p>Falls es sowohl ein Attribut als auch ein Unterformular mit dem selben Namen gibt, geben die ersten beiden
+Möglichkeiten den Wert des Attributes zurück.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>positions = order.order_position
+          = order[<span class="hljs-string">"order position"</span>]
+          = order.get_dependencies_by_name(<span class="hljs-string">"order_position"</span>)
+          = order.get_dependencies(&lt;dependency_id&gt;)
+
+<span class="hljs-keyword">for</span> pos <span class="hljs-keyword">in</span> positions:
+    print(pos.title)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>
+              <p>Setzt man <code>create_</code> vor den Namen des Unterformulars erhält man eine Methode, die einen neuen Eintrag in einem
+Unterformular erzeugt.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>new_position = order.create_order_position()
+             = order.create_dependency_by_name(<span class="hljs-string">"order position"</span>)
+new_position.article = ...
+new_position.save()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-26">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>
+              <h3 id="status">Status</h3>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-27">&#182;</a>
+              </div>
+              <p>Man kann den aktuellen Status einer Instanz über folgende spezielle Attribute auslesen:</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>john_doe.current_state_name         <span class="hljs-comment"># = "Active"</span>
+john_doe.current_state_number       <span class="hljs-comment"># = 10</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-28">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>
+              <p>Man kann den Status auch ändern, wahlweise über dessen Nummer oder Namen.</p>
+<p>Dabei ist zu beachten, dass die Instanz automatisch aktualisiert wird. Nicht gespeicherte Änderungen gehen
+dabei verloren.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>john_doe.change_to_state(<span class="hljs-number">99</span>)
+john_doe.change_to_state(<span class="hljs-string">"Inactive"</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-29">&#182;</a>
+              </div>
+              <h2 id="metadaten">Metadaten</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-30">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-30">&#182;</a>
+              </div>
+              <p>Die <code>meta</code> Eigenschaft der Klasse <code>BusinessObject</code> (und auch von Instanzen) enthält einige Metadaten.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>customer_bo.meta.name               <span class="hljs-comment"># = "Customer"</span>
+customer_bo.meta.bo_meta_id</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-31">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-31">&#182;</a>
+              </div>
+              <h3 id="attribute">Attribute</h3>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-32">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-32">&#182;</a>
+              </div>
+              <p>Auch die Metadaten von Attributen können ausgelesen werden.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>email_attr = customer_bo.meta.email
+           = customer_bo.meta[<span class="hljs-string">"email"</span>]
+           = customer_bo.meta.get_attribute_by_name(<span class="hljs-string">"email"</span>)
+           = customer_bo.meta.get_attribute(&lt;bo_attr_id&gt;)
+
+customer_bo.meta.attributes         <span class="hljs-comment"># = [&lt;email_attr&gt;, ...]</span>
+
+email_attr.name                     <span class="hljs-comment"># = "E-Mail"</span>
+email_attr.bo_attr_id
+email_attr.type                     <span class="hljs-comment"># = "String"</span>
+email_attr.is_writeable
+email_attr.is_reference</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-33">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-33">&#182;</a>
+              </div>
+              <h2 id="exceptions">Exceptions</h2>
+<p>Die Bibliothek wirft im Falle von Fehlern verschiedene Exceptions, die alle von der Klasse <code>NuclosException</code> erben.</p>
+<p>Falls der Login am Nuclos Server fehlschlägt oder dem angemeldeten Benutzer die Rechte für eine bestimmte Aktion fehlen
+wird eine <code>NuclosAuthenticationException</code> geworfen.</p>
+<p>Fall einem Attribut ein falscher Wert zugewiesen wird, wird eine <code>NuclosValueException</code> geworfen.</p>
+<p>Wenn die verwendete Version des Nuclos Servers ein bestimmtes Feature nicht unterstützt wird eine
+<code>NuclosVersionException</code> geworfen. </p>
+<p>Im Falle von HTTP Fehlern wirft die Bibliothek eine <code>NuclosHTTPException</code>. Diese hat die Eigenschaften <code>code</code> und
+<code>reason</code>, die den empfangenen HTTP Statuscode bzw. die dazugehörige Beschreibung enthalten.</p>
+
+            </div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>
