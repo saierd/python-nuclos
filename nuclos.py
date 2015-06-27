@@ -361,6 +361,7 @@ class NuclosAPI:
         :param parameters: URL parameters.
         :return: The complete server URL.
         """
+
         def quote_all(s):
             return urllib.parse.quote(s, safe="")
 
@@ -371,7 +372,8 @@ class NuclosAPI:
             parameters = {}
         param = "&".join("{}={}".format(quote_all(str(k)), quote_all(str(parameters[k]))) for k in parameters)
 
-        url = "http://{}:{}/{}/rest/{}".format(quote(self.settings.ip), self.settings.port, quote(self.settings.instance), quote(path))
+        url = "http://{}:{}/{}/rest/{}".format(quote(self.settings.ip), self.settings.port,
+                                               quote(self.settings.instance), quote(path))
         if param:
             url += "?" + param
 
