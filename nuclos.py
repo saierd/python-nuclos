@@ -710,7 +710,7 @@ class BusinessObjectInstance:
                 url = BO_INSTANCE_LIST_ROUTE.format(self._business_object.meta.bo_meta_id)
                 result = self._nuclos.request(url, data=self._update_data(), method="POST")
                 if result:
-                    self._bo_id = result["bo_id"]
+                    self._bo_id = result["boId"]
                     self._data = result
                     self._updated_attribute_data = {}
                     return True
@@ -737,13 +737,13 @@ class BusinessObjectInstance:
         """
         data = {
             "boMetaId": self._business_object.meta.bo_meta_id,
-            "boValues": self._updated_attribute_data
+            "attributes": self._updated_attribute_data
         }
         if self.is_new():
             data["_flag"] = "insert"
         else:
             data["_flag"] = "update"
-            data["bo_id"] = self._bo_id
+            data["boId"] = self._bo_id
         return data
 
     def _dependency_list_url(self, dependency_id):
