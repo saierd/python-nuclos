@@ -4,6 +4,6 @@ A Python library for the REST API of [Nuclos](http://www.nuclos.de/). You can fi
 
 | Version                                                         | Compatible Nuclos versions |
 | --------------------------------------------------------------- | -------------------------- |
-| [1.0](https://github.com/saierd/python-nuclos/releases/tag/1.0) | 4.0.0                      |
+| [1.0](https://github.com/saierd/python-nuclos/releases/tag/1.0) | 4.3.0                      |
 
 License: [MIT](https://github.com/saierd/python-nuclos/blob/master/LICENSE)

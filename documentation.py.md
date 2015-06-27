@@ -2,9 +2,12 @@
 
 Eine Python Bibliothek für die REST API von [Nuclos](http://www.nuclos.de/).
 
-Der Quellcode kann von [Bitbucket](https://bitbucket.org/saierd/python-nuclos) heruntergeladen werden. Es wird
-mindestens Nuclos 4.3 benötigt, da mit dieser Version die aktuelle Variante der API eingeführt wurde. Außerdem wird
-mindestens Python 3.3 benötigt, Python 2 wird nicht unterstützt.
+Der Quellcode kann von [Github](https://github.com/saierd/python-nuclos) heruntergeladen werden. Es wird
+mindestens Nuclos 4.3 benötigt, da mit dieser Version die aktuelle Variante der API eingeführt wurde. Durch Änderungen
+an der API sind leider nicht alle Nuclos Versionen kompatibel. Eine genaue Aufstellung der Nuclos Version und der
+dazu passenden Bibliotheksversion finden Sie im Readme.
+
+Außerdem wird mindestens Python 3.3 benötigt, Python 2 wird nicht unterstützt.
 
     #
 
