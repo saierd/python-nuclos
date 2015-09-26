@@ -846,10 +846,10 @@ class BusinessObjectInstance:
         :return: A new instance.
         """
         dependency_bo = self._get_dependency_bo(dependency_id)
-        reffield_id = self._get_dependency_meta(dependency_id)["reffieldId"]
+        ref_attr_id = self._get_dependency_meta(dependency_id)["refAttrId"]
 
         new_bo = dependency_bo.create()
-        new_bo.set_attribute(reffield_id, self)
+        new_bo.set_attribute(ref_attr_id, self)
         return new_bo
 
     def create_dependency_by_name(self, name):
