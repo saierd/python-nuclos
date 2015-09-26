@@ -180,6 +180,20 @@ dabei verloren.
     john_doe.change_to_state(99)
     john_doe.change_to_state("Inactive")
 
+### Aktionen
+
+    #
+
+Die Aktion einer Instanz kann ebenfalls über ein spezielles Attribut ausgelesen werden:
+
+    john_doe.process                    # = "Business Client"
+
+Man kann die Aktion auch verändern. Im Gegensatz zur Änderung des Status, muss die Instanz dabei explizit gespeichert
+werden.
+
+    john_doe.set_process("Individual Client")
+    john_doe.save()
+
 ## Metadaten
 
     #

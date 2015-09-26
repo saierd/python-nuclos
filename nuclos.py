@@ -618,7 +618,6 @@ class BusinessObject:
 
 
 class BusinessObjectInstance:
-    # TODO: Process.
     # TODO: Document fields.
     # TODO: Call business rules.
     # TODO: Generators.
@@ -715,6 +714,19 @@ class BusinessObjectInstance:
         :param name: The name of the state.
         """
         self._change_to_state(self._get_state_id_by_name(name))
+
+    @property
+    def process(self):
+        try:
+            return self.data["attributes"]["nuclosProcess"]["name"]
+        except IndexError:
+            return None
+
+    def set_process(self, name):
+        self._updated_attribute_data["nuclosProcess"] = {
+            "id": self._business_object.bo_meta_id + "_" + name,
+            "name": name
+        }
 
     def is_new(self):
         return self._bo_id is None
@@ -908,8 +920,7 @@ class BusinessObjectInstance:
         elif data_index in self.data["attributes"]:
             data = self.data["attributes"][data_index]
         else:
-            logging.warning("No data for attribute '{}'.".format(bo_attr_id))
-
+            # The attribute is null.
             if attr.type == "Boolean":
                 return False
             return None
