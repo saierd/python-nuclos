@@ -908,9 +908,11 @@ class BusinessObjectInstance:
         elif data_index in self.data["attributes"]:
             data = self.data["attributes"][data_index]
         else:
+            logging.warning("No data for attribute '{}'.".format(bo_attr_id))
+
             if attr.type == "Boolean":
                 return False
-            raise AttributeError("No data for attribute '{}'.".format(bo_attr_id))
+            return None
 
         if attr.is_reference and data is not None:
             return attr.referenced_bo().get(data["id"])
