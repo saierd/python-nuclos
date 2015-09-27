@@ -486,7 +486,7 @@ john_doe.change_to_state(<span class="hljs-string">"Inactive"</span>)</pre></div
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
-              <h2 id="metadaten">Metadaten</h2>
+              <h3 id="aktionen">Aktionen</h3>
 
             </div>
             
@@ -499,12 +499,11 @@ john_doe.change_to_state(<span class="hljs-string">"Inactive"</span>)</pre></div
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
-              <p>Die <code>meta</code> Eigenschaft der Klasse <code>BusinessObject</code> (und auch von Instanzen) enthält einige Metadaten.</p>
+              <p>Die Aktion einer Instanz kann ebenfalls über ein spezielles Attribut ausgelesen werden:</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>customer_bo.meta.name               <span class="hljs-comment"># = "Customer"</span>
-customer_bo.meta.bo_meta_id</pre></div></div>
+            <div class="content"><div class='highlight'><pre>john_doe.process                    <span class="hljs-comment"># = "Business Client"</span></pre></div></div>
             
         </li>
         
@@ -515,9 +514,13 @@ customer_bo.meta.bo_meta_id</pre></div></div>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
-              <h3 id="attribute">Attribute</h3>
+              <p>Man kann die Aktion auch verändern. Im Gegensatz zur Änderung des Status, muss die Instanz dabei explizit gespeichert
+werden.</p>
 
             </div>
+            
+            <div class="content"><div class='highlight'><pre>john_doe.set_process(<span class="hljs-string">"Individual Client"</span>)
+john_doe.save()</pre></div></div>
             
         </li>
         
@@ -527,6 +530,48 @@ customer_bo.meta.bo_meta_id</pre></div></div>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-32">&#182;</a>
+              </div>
+              <h2 id="metadaten">Metadaten</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-33">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-33">&#182;</a>
+              </div>
+              <p>Die <code>meta</code> Eigenschaft der Klasse <code>BusinessObject</code> (und auch von Instanzen) enthält einige Metadaten.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>customer_bo.meta.name               <span class="hljs-comment"># = "Customer"</span>
+customer_bo.meta.bo_meta_id</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-34">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-34">&#182;</a>
+              </div>
+              <h3 id="attribute">Attribute</h3>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-35">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-35">&#182;</a>
               </div>
               <p>Auch die Metadaten von Attributen können ausgelesen werden.</p>
 
@@ -548,11 +593,11 @@ email_attr.is_reference</pre></div></div>
         </li>
         
         
-        <li id="section-33">
+        <li id="section-36">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-33">&#182;</a>
+                <a class="pilcrow" href="#section-36">&#182;</a>
               </div>
               <h2 id="exceptions">Exceptions</h2>
 <p>Die Bibliothek wirft im Falle von Fehlern verschiedene Exceptions, die alle von der Klasse <code>NuclosException</code> erben.</p>
