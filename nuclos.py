@@ -535,17 +535,22 @@ class BusinessObject:
             raise NuclosException("Insert of business object {} not allowed.".format(self.meta.name))
         return BusinessObjectInstance(self._nuclos, self, bo_id)
 
-    def list(self, search=None, offset=0, limit=0, sort=None, sort_by_title=False):
+    def list(self, search=None, offset=0, limit=0, sort=None, sort_by_title=False, fetch_all=False):
         """
-        Get a list of instances for this business object.
+        Get a result of instances for this business object.
 
         :param search: A text to search for.
         :param offset: The number of instances to skip.
         :param limit: The maximum number of instances to load.
         :param sort: An attribute (or the name of an attribute) to sort by.
-        :param sort_by_title: Whether the list should be sorted by the instance titles.
-        :return: A list of BusinessObjectInstance objects.
+        :param sort_by_title: Whether the result should be sorted by the instance titles.
+        :param fetch_all: Whether all instances should be fetched.
+        :return: A result of BusinessObjectInstance objects.
         """
+        if fetch_all:
+            # Get at least 100 items at once when fetching all instances.
+            limit = max(limit, 100)
+
         parameters = {}
         if search:
             parameters["search"] = search
@@ -553,6 +558,7 @@ class BusinessObject:
             parameters["chunksize"] = limit
         if offset or limit:
             parameters["offset"] = offset
+        current_offset = offset
 
         if sort:
             # Allow to give a name of an attribute for sorting.
@@ -569,9 +575,28 @@ class BusinessObject:
         if sort_by_title:
             parameters["sort"] = "BOTITLE"
 
-        data = self._nuclos.request(BO_INSTANCE_LIST_ROUTE.format(self.bo_meta_id), parameters=parameters)
+        result = []
 
-        return [self.get(bo["boId"]) for bo in data["bos"]]
+        while True:
+            data = self._nuclos.request(BO_INSTANCE_LIST_ROUTE.format(self.bo_meta_id), parameters=parameters)
+            result.extend([self.get(bo["boId"]) for bo in data["bos"]])
+
+            if not fetch_all or data["all"]:
+                break
+
+            current_offset += limit + 1
+            parameters["offset"] = current_offset
+
+        return result
+
+    def list_all(self, **kwargs):
+        """
+        Get a list of all instances.
+
+        :param kwargs: Other arguments the list method accepts.
+        :return: A list of all instances matching the
+        """
+        return self.list(fetch_all=True, **kwargs)
 
     def get_one(self, *args, **kwargs):
         """
@@ -594,6 +619,16 @@ class BusinessObject:
         :return: A list of instances matching the search text.
         """
         return self.list(text, **kwargs)
+
+    def search_all(self, text, **kwargs):
+        """
+        Search for all instances which match the given text.
+
+        :param text: The search text.
+        :param kwargs: Other arguments the list method accepts.
+        :return: A list of instances matching the search text.
+        """
+        return self.list_all(text, **kwargs)
 
     def search_one(self, text, **kwargs):
         """

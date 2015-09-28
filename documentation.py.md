@@ -46,7 +46,9 @@ Mit der `list` Methode erhält man eine Liste der Instanzen eines Businessobjekt
     for customer in customer_bo.list():
         print(customer.title)
 
-Mit verschiedenen Argumenten kann man das Verhalten der Methode beeinflussen und bspw. eine Sortierung einstellen.
+Mit verschiedenen Argumenten kann man das Verhalten der Methode beeinflussen und bspw. das Ergebnis sortieren kann.
+
+Diese Argumente werden auch von allen unten angegebenen Varianten von `list` und `search` akzeptiert.
 
     customer_bo.list(offset=10, limit=20)
 
@@ -54,14 +56,20 @@ Mit verschiedenen Argumenten kann man das Verhalten der Methode beeinflussen und
     customer_bo.list(sort="city")
     customer_bo.list(sort_by_title=True)
 
-Die `search` Methode sucht nach Instanzen, in denen ein bestimmter Text vorkommt. Sie akzeptiert alle Argumente, die
-auch `list` akzeptiert.
+Dabei ist zu beachten, dass die `list` Methode nur einen Teil der Ergebnisse zurückliefert (nämlich gerade so viele,
+wie durch den Parameter `limit` angefordert wurden). Um eine vollständige Liste zu erhalten, kann die Methode `list_all`
+verwendet werden.
+
+    customer_bo.list_all()
+
+Die `search` Methode sucht nach Instanzen, in denen ein bestimmter Text vorkommt. Dabei werden wiederum  nur so viele
+Ergebnisse zurückgegeben, wie durch den Parameter `limit` angegeben wurde. Entsprechend gibt es auch eine Methode
+`search_all`, die die vollständige Liste zurückgibt.
 
     customers = customer_bo.search("Doe")
+              = customer_bo.search_all("Doe")
 
 Für `list` und `search` gibt es auch entsprechende Methoden, die nur den ersten Treffer zurückgeben.
-
-Beide Methoden akzeptieren die selben Argumente wie `list`.
 
     customer = customer_bo.get_one()
              = customer_bo.search_one("Doe")
