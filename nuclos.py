@@ -618,7 +618,7 @@ class BusinessObject:
         :param kwargs: Other arguments the list method accepts.
         :return: A list of instances matching the search text.
         """
-        return self.list(text, **kwargs)
+        return self.list(search=text, **kwargs)
 
     def search_all(self, text, **kwargs):
         """
@@ -628,7 +628,7 @@ class BusinessObject:
         :param kwargs: Other arguments the list method accepts.
         :return: A list of instances matching the search text.
         """
-        return self.list_all(text, **kwargs)
+        return self.list_all(search=text, **kwargs)
 
     def search_one(self, text, **kwargs):
         """
