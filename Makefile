@@ -17,6 +17,14 @@ documentation: docco-installed
 
 docco-installed: ; @command -v docco >/dev/null 2>&1 || { echo >&2 "Need docco for building the documentation. Aborting."; exit 1; }
 
+publish-documentation: documentation
+	git checkout gh-pages
+	cp documentation/index.html index.html
+	git add index.html
+	git commit -m "Update the documentation"
+	git push origin gh-pages
+	git checkout master
+
 clean:
 	@echo "Cleaning up..."
 	@rm -f *.zip
