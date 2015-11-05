@@ -5,6 +5,8 @@ This project is licensed under the terms of the MIT license. See the LICENSE fil
 """
 __version__ = "1.3"
 
+# TODO: Support SSL.
+
 import sys
 
 if sys.version_info[0] != 3 or sys.version_info[1] < 3:
@@ -21,7 +23,6 @@ import urllib.request
 import urllib.parse
 
 VERSION_ROUTE = "version"
-DB_VERSION_ROUTE = "dbversion"
 LOGIN_ROUTE = ""
 LOGOUT_ROUTE = ""
 BO_LIST_ROUTE = "bos"
@@ -138,11 +139,6 @@ class NuclosAPI:
     @Cached
     def version(self):
         return self.request(VERSION_ROUTE, auto_login=False, json_answer=False)
-
-    @property
-    @Cached
-    def db_version(self):
-        return self.request(DB_VERSION_ROUTE, auto_login=False, json_answer=False)
 
     def require_version(self, *version):
         """
