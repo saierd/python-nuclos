@@ -4,7 +4,7 @@ import unittest
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-from nuclos import NuclosAPI, AttributeMeta, BusinessObject, BusinessObjectInstance, BusinessObjectMeta
+from nuclos import NuclosAPI, AttributeMeta, BusinessObject, BusinessObjectInstance, BusinessObjectMeta, NuclosException
 
 # Note: We give most of the tests a number to make sure they are executed in the same order as they are specified. This
 #       might not be the best practice but it is very convenient in this case, as the tests heavily depend on the
@@ -28,14 +28,26 @@ class TestConnection(NuclosTest):
         self.assertFalse(self.nuclos.require_version(4, 5, 3))
         self.assertFalse(self.nuclos.require_version(4, 6))
 
-    def test_00_login(self):
+    def test_00_logout_without_login(self):
+        self.assertIsNone(self.nuclos.session_id)
+        self.assertTrue(self.nuclos.logout())
+        self.assertIsNone(self.nuclos.session_id)
+
+    def test_01_login(self):
         self.assertIsNone(self.nuclos.session_id)
         self.nuclos.login()
         self.assertIsNotNone(self.nuclos.session_id)
 
-    def test_01_logout(self):
+    def test_02_logout(self):
         self.assertIsNotNone(self.nuclos.session_id)
-        self.nuclos.logout()
+        self.assertTrue(self.nuclos.logout())
+        self.assertIsNone(self.nuclos.session_id)
+
+    def test_03_reconnect(self):
+        self.nuclos.login()
+
+        self.assertIsNotNone(self.nuclos.session_id)
+        self.nuclos.reconnect()
         self.assertIsNone(self.nuclos.session_id)
 
 
@@ -52,6 +64,12 @@ class TestBusinessObjects(NuclosTest):
         self.assertIsInstance(self.nuclos["customer"], BusinessObject)
         self.assertIsInstance(self.nuclos.get_business_object_by_name("customer"), BusinessObject)
 
+        self.assertRaises(AttributeError, lambda: self.nuclos.non_existent_bo)
+        self.assertRaises(IndexError, lambda: self.nuclos["non_existent_bo"])
+        self.assertIsNone(self.nuclos.get_business_object_by_name("non_existent_bo"))
+
+        self.assertRaises(TypeError, lambda: self.nuclos[0])
+
 
 class TestBusinessObjectInstances(NuclosTest):
     def test_00_remove_all_data(self):
@@ -63,6 +81,8 @@ class TestBusinessObjectInstances(NuclosTest):
     def test_01_empty_list(self):
         self.assertEqual(len(self.nuclos.customer.list()), 0)
         self.assertEqual(len(self.nuclos.customer.list_all()), 0)
+
+        self.assertIsNone(self.nuclos.customer.get_one())
 
     def test_02_insertion(self):
         john_doe = self.nuclos.customer.create()
@@ -107,6 +127,11 @@ class TestBusinessObjectInstances(NuclosTest):
         self.assertEqual(sorted_list[0].name, "Jane Doe")
         self.assertEqual(sorted_list[1].name, "John Doe")
 
+        # Sort by attribute given as a string.
+        sorted_list = self.nuclos.customer.list_all(sort="email")
+        self.assertEqual(sorted_list[0].name, "Jane Doe")
+        self.assertEqual(sorted_list[1].name, "John Doe")
+
     def test_04_search(self):
         search_list = self.nuclos.customer.search_all("John")
         self.assertEqual(len(search_list), 1)
@@ -125,9 +150,20 @@ class TestBusinessObjectInstances(NuclosTest):
         self.assertIsNone(self.nuclos.customer.search_one("Bob"))
 
     def test_05_delete(self):
-        self.nuclos.customer.search_one("Jane").delete()
+        jane = self.nuclos.customer.search_one("Jane")
 
+        self.assertTrue(jane.delete())
         self.assertEqual(len(self.nuclos.customer.list_all()), 1)
+
+        # Deleting twice should not be a problem.
+        self.assertTrue(jane.delete())
+
+        # Deleting an unsaved instance should not be possible.
+        new_customer = self.nuclos.customer.create()
+        self.assertRaises(NuclosException, new_customer.delete)
+
+        # Saving a deleted instance should not be possible.
+        self.assertRaises(NuclosException, jane.save)
 
     def test_06_title(self):
         self.assertEqual(self.nuclos.customer.search_one("John").title, "John Doe")
@@ -138,6 +174,12 @@ class TestBusinessObjectInstances(NuclosTest):
         self.assertEqual(john.name, "John Doe")
         self.assertEqual(john["name"], "John Doe")
         self.assertEqual(john.get_attribute_by_name("name"), "John Doe")
+
+        self.assertRaises(AttributeError, lambda: john.non_existent_attribute)
+        self.assertRaises(AttributeError, lambda: john["non_existent_attribute"])
+        self.assertRaises(AttributeError, lambda: john.get_attribute_by_name("non_existent_attribute"))
+
+        self.assertRaises(TypeError, lambda: john[0])
 
     def test_08_changing_attributes(self):
         john = self.nuclos.customer.search_one("John")
@@ -150,8 +192,16 @@ class TestBusinessObjectInstances(NuclosTest):
         bob = self.nuclos.customer.search_one("John")
         self.assertEqual(bob.name, "Bob")
 
-        bob.name = "John Doe"
+        bob["name"] = "John Doe"
+        bob.set_attribute_by_name("name", "John Doe")
         bob.save()
+
+        with self.assertRaises(AttributeError):
+            john.non_existent_attribute = 1
+        with self.assertRaises(AttributeError):
+            john["non_existent_attribute"] = 1
+        with self.assertRaises(AttributeError):
+            john.set_attribute_by_name("non_existent_attribute", 1)
 
     def test_09_refresh(self):
         john = self.nuclos.customer.search_one("John")
@@ -201,6 +251,8 @@ class TestBusinessObjectInstances(NuclosTest):
 
         self.assertEqual(len(john["order"]), 2)
         self.assertEqual(len(john.get_dependencies_by_name("order")), 2)
+
+        self.assertRaises(AttributeError, lambda: john.get_dependencies_by_namee("non_existent_dependency"))
 
     def test_13_state(self):
         john = self.nuclos.customer.search_one("John")
@@ -254,6 +306,9 @@ class TestMetaData(NuclosTest):
         self.assertTrue(customer_meta.can_insert)
         self.assertTrue(customer_meta.can_update)
 
+        john = self.nuclos.customer.search_one("John")
+        self.assertIsInstance(john.meta, BusinessObjectMeta)
+
     def test_attribute_meta(self):
         customer_meta = self.nuclos.customer.meta
 
@@ -261,8 +316,14 @@ class TestMetaData(NuclosTest):
         self.assertIsInstance(customer_meta["email"], AttributeMeta)
         self.assertIsInstance(customer_meta.get_attribute_by_name("email"), AttributeMeta)
 
-        self.assertIsInstance(customer_meta.attributes, list)
+        self.assertRaises(AttributeError, lambda: customer_meta.non_existent_attribute)
+        self.assertRaises(IndexError, lambda: customer_meta["non_existent_attribute"])
+        self.assertIsNone(customer_meta.get_attribute_by_name("non_existent_attribute"))
 
+        self.assertRaises(TypeError, lambda: customer_meta[0])
+
+        # Attribute list.
+        self.assertIsInstance(customer_meta.attributes, list)
         attribute_names = [a.name for a in customer_meta.attributes]
         for attr in ["Name", "Email"]:
             self.assertIn(attr, attribute_names)
