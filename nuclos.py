@@ -748,14 +748,19 @@ class BusinessObjectInstance:
 
     @property
     def process(self):
+        if "nuclosProcess" in self._updated_attribute_data:
+            return self._updated_attribute_data["nuclosProcess"]["name"]
+
         try:
             return self.data["attributes"]["nuclosProcess"]["name"]
         except IndexError:
             return None
 
     def set_process(self, name):
+        process_id = self._business_object.bo_meta_id + "_" + name.replace(" ", "")
+
         self._updated_attribute_data["nuclosProcess"] = {
-            "id": self._business_object.bo_meta_id + "_" + name,
+            "id": process_id,
             "name": name
         }
 
