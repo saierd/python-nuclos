@@ -551,7 +551,7 @@ class BusinessObject:
         if search:
             parameters["search"] = search
         if limit:
-            parameters["chunksize"] = limit
+            parameters["chunksize"] = limit - 1
         if offset or limit:
             parameters["offset"] = offset
         current_offset = offset
