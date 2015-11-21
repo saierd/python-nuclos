@@ -11,6 +11,12 @@ package:
 	@echo "Packaging the tar file..."
 	@tar -czf $(BUILD_DIRECTORY)/python-nuclos-$(DATE).tar.gz $(PACKAGE_CONTENT)
 
+test:
+	python3 test/test.py
+
+coverage:
+	cd test && coverage3 run test.py && coverage3 html
+
 documentation: docco-installed
 	@echo "Building documentation..."
 	@docco -o $(DOCUMENTATION_DIRECTORY) documentation.py.md
