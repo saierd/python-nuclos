@@ -186,7 +186,7 @@ Dabei ist zu beachten, dass die Instanz automatisch aktualisiert wird. Nicht ges
 dabei verloren.
 
     john_doe.change_to_state(99)
-    john_doe.change_to_state("Inactive")
+    john_doe.change_to_state_by_name("Inactive")
 
 ### Aktionen
 
