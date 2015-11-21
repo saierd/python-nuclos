@@ -1,6 +1,6 @@
 BUILD_DIRECTORY=release
 DOCUMENTATION_DIRECTORY=documentation
-PACKAGE_CONTENT=nuclos.py default.ini LICENSE $(DOC_FOLDER)
+PACKAGE_CONTENT=nuclos.py default.ini LICENSE $(DOCUMENTATION_DIRECTORY)
 DATE=$(shell date +%Y-%m-%d)
 
 all: documentation package
