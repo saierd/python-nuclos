@@ -1,5 +1,25 @@
+# Python.
 __pycache__/
+*.pyc
+
+# Configuration files.
+*.ini
+!default.ini
+!test/test.ini
+
+# Build directory.
+release/
+
+# Documentation build directory.
 documentation/
-test.*
+
+# Vagrant machine for tests.
+test/.vagrant/
+
+# Information about test coverage.
+test/.coverage
+test/htmlcov/
+
+# Build archives.
 *.zip
 *.tar.gz
