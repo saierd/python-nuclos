@@ -6,6 +6,10 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from nuclos import NuclosAPI, AttributeMeta, BusinessObject, BusinessObjectInstance, BusinessObjectMeta, NuclosException
 
+NUCLOS_VERSION_MAJOR = 4
+NUCLOS_VERSION_MINOR = 7
+NUCLOS_VERSION_REVISION = 2
+
 # Note: We give most of the tests a number to make sure they are executed in the same order as they are specified. This
 #       might not be the best practice but it is very convenient in this case, as the tests heavily depend on the
 #       database content on the Nuclos server. Setting it up separately for every test seems to be unnecessary and not
@@ -20,13 +24,17 @@ class NuclosTest(unittest.TestCase):
 
 class TestConnection(NuclosTest):
     def test_version(self):
-        self.assertEqual(self.nuclos.version, "4.5.2")
+        self.assertEqual(self.nuclos.version, "{}.{}.{}".format(NUCLOS_VERSION_MAJOR, NUCLOS_VERSION_MINOR,
+                                                                NUCLOS_VERSION_REVISION))
 
     def test_require_version(self):
-        self.assertTrue(self.nuclos.require_version(4, 4))
-        self.assertTrue(self.nuclos.require_version(4, 5, 2))
-        self.assertFalse(self.nuclos.require_version(4, 5, 3))
-        self.assertFalse(self.nuclos.require_version(4, 6))
+        self.assertTrue(self.nuclos.require_version(NUCLOS_VERSION_MAJOR, NUCLOS_VERSION_MINOR))
+        self.assertTrue(self.nuclos.require_version(NUCLOS_VERSION_MAJOR, NUCLOS_VERSION_MINOR,
+                                                    NUCLOS_VERSION_REVISION))
+
+        self.assertFalse(self.nuclos.require_version(NUCLOS_VERSION_MAJOR, NUCLOS_VERSION_MINOR,
+                                                     NUCLOS_VERSION_REVISION + 1))
+        self.assertFalse(self.nuclos.require_version(NUCLOS_VERSION_MAJOR, NUCLOS_VERSION_MINOR + 1))
 
     def test_00_logout_without_login(self):
         self.assertIsNone(self.nuclos.session_id)
