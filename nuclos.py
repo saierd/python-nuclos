@@ -9,7 +9,7 @@ __version__ = "1.4"
 
 import sys
 
-if sys.version_info[0] != 3 or sys.version_info[1] < 3:
+if sys.version_info[0] < 3 or (sys.version_info[0] == 3 and sys.version_info[1] < 3):
     print("This library needs at least Python 3.3!")
     sys.exit(1)
 
@@ -319,7 +319,7 @@ class NuclosAPI:
         if method and request.data and method not in ["POST", "PUT"]:
             logging.warning("Overriding the POST method while sending data!")
         if self.session_id:
-            request.add_header("sessionid", self.session_id)
+            request.add_header("Cookie", "JSESSIONID=" + str(self.session_id))
 
         logging.debug("Sending {} request to {}.".format(request.get_method(), request.get_full_url()))
         if request.data:
@@ -551,7 +551,7 @@ class BusinessObject:
         if search:
             parameters["search"] = search
         if limit:
-            parameters["chunksize"] = limit - 1
+            parameters["chunkSize"] = limit - 1
         if offset or limit:
             parameters["offset"] = offset
         current_offset = offset
@@ -564,12 +564,12 @@ class BusinessObject:
                     sort = attr
 
             if isinstance(sort, AttributeMeta):
-                parameters["sort"] = sort.bo_attr_id
+                parameters["orderBy"] = sort.bo_attr_id
             else:
-                parameters["sort"] = sort
+                parameters["orderBy"] = sort
 
         if sort_by_title:
-            parameters["sort"] = "BOTITLE"
+            parameters["orderBy"] = "BOTITLE"
 
         result = []
 
@@ -598,7 +598,8 @@ class BusinessObject:
         """
         Get the first list element.
 
-        :param args, kwargs: Arguments which the list method accepts.
+        :param args: Arguments which the list method accepts.
+        :param kwargs: Arguments which the list method accepts.
         :return: The first instance found or None if there is none.
         """
         result = self.list(*args, **kwargs)
