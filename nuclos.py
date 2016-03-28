@@ -1,9 +1,9 @@
 """
-Copyright (c) 2014-2015 Daniel Saier
+Copyright (c) 2014-2016 Daniel Saier
 
 This project is licensed under the terms of the MIT license. See the LICENSE file.
 """
-__version__ = "1.4"
+__version__ = "1.5"
 
 # TODO: Support SSL.
 
@@ -560,6 +560,7 @@ class BusinessObject:
             parameters["offset"] = offset
         current_offset = offset
 
+        # TODO: Allow multiple sort arguments and decreasing sorts.
         if sort is not None:
             # Allow to give a name of an attribute for sorting.
             if isinstance(sort, str):
