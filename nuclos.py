@@ -29,8 +29,9 @@ BO_LIST_ROUTE = "bos"
 BO_META_ROUTE = "boMetas/{}"
 BO_INSTANCE_LIST_ROUTE = "bos/{}"
 BO_INSTANCE_ROUTE = "bos/{}/{}"
-BO_DEPENDENCY_LIST_ROUTE = "/bos/{}/{}/subBos/{}"
-STATE_CHANGE_ROUTE = "/boStateChanges/{}/{}/{}"
+BO_DEPENDENCY_LIST_ROUTE = "bos/{}/{}/subBos/{}"
+BO_DEPENDENCY_META_ROUTE = "boMetas/{}/subBos/{}"
+STATE_CHANGE_ROUTE = "boStateChanges/{}/{}/{}"
 
 
 class NuclosSettings:
@@ -368,7 +369,10 @@ class NuclosAPI:
             parameters = {}
         param = "&".join("{}={}".format(quote_all(str(k)), quote_all(str(parameters[k]))) for k in parameters)
 
-        url = "http://{}:{}/{}/rest/{}".format(quote(self.settings.ip), self.settings.port,
+        if not path.startswith("/"):
+            path = "/" + path
+
+        url = "http://{}:{}/{}/rest{}".format(quote(self.settings.ip), self.settings.port,
                                                quote(self.settings.instance), quote(path))
         if param:
             url += "?" + param
@@ -843,12 +847,13 @@ class BusinessObjectInstance:
         else:
             data["_flag"] = "update"
             data["boId"] = self._bo_id
+            data["version"] = self.data["version"]
         return data
 
     def _dependency_list_url(self, dependency_id):
         if not self._bo_id:
             raise NuclosException("Attempting to access data of an uninitialized business object instance.")
-        return BO_DEPENDENCY_LIST_ROUTE.format(self._business_object.bo_meta_id, self._bo_id, dependency_id)
+        return BO_DEPENDENCY_LIST_ROUTE.format(self.meta.bo_meta_id, self.id, dependency_id)
 
     @property
     @Cached
@@ -1004,24 +1009,6 @@ class BusinessObjectInstance:
                     raise e
         raise TypeError("Invalid argument type.")
 
-    def _attribute_is_writeable(self, attr):
-        """
-        Check whether the given attribute is writeable.
-
-        :param attr: The attribute to check.
-        :return: True if it is writeable.
-        """
-        if not attr.is_writeable:
-            return False
-        if not self._is_initialized:
-            # Can't check restrictions because the data is not initialized yet.
-            return True
-
-        if attr.bo_attr_id in self.data["attrRestrictions"]:
-            if self.data["attrRestrictions"][attr.bo_attr_id] == "readonly":
-                return False
-        return True
-
     def set_attribute(self, bo_attr_id, value):
         """
         Update an attribute.
@@ -1033,7 +1020,7 @@ class BusinessObjectInstance:
         if attr is None:
             raise AttributeError("Unknown attribute '{}'.".format(bo_attr_id))
 
-        if not self._attribute_is_writeable(attr):
+        if not attr.is_writeable:
             raise NuclosAuthenticationException("Attribute '{}' is not writeable.".format(attr.name))
 
         if value is None and not attr.is_nullable:
