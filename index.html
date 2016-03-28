@@ -146,8 +146,7 @@ nuclos.business_objects             <span class="hljs-comment"># = [&lt;customer
             <div class="content"><div class='highlight'><pre>customer_bo.list(offset=<span class="hljs-number">10</span>, limit=<span class="hljs-number">20</span>)
 
 customer_bo.list(sort=customer_bo.meta.city)
-customer_bo.list(sort=<span class="hljs-string">"city"</span>)
-customer_bo.list(sort_by_title=<span class="hljs-keyword">True</span>)</pre></div></div>
+customer_bo.list(sort=<span class="hljs-string">"city"</span>)</pre></div></div>
             
         </li>
         
@@ -157,6 +156,24 @@ customer_bo.list(sort_by_title=<span class="hljs-keyword">True</span>)</pre></di
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Mit dem Parameter <code>where</code> werden auch beliebige Filter unterstützt. Es gibt derzeit allerdings keine einfache
+Möglichkeit, diese aufzubauen. Stattdessen muss ein entsprechender String von Hand aufgebaut werden. Weitere
+Informationen zum Aufbau der Filter erhalten Sie im <a href="http://wiki.nuclos.de/display/Entwicklung/4.+Businessobjekte+%28BO%29+lesen">Nuclos Wiki</a>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>where_expression = <span class="hljs-string">"{} = 'john@doe.com'"</span>.format(customer_bo.meta.email.bo_attr_id)
+customer_bo.list(where=where_expression)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
               <p>Dabei ist zu beachten, dass die <code>list</code> Methode nur einen Teil der Ergebnisse zurückliefert (nämlich gerade so viele,
 wie durch den Parameter <code>limit</code> angefordert wurden). Um eine vollständige Liste zu erhalten, kann die Methode <code>list_all</code>
@@ -169,11 +186,11 @@ verwendet werden.</p>
         </li>
         
         
-        <li id="section-10">
+        <li id="section-11">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
+                <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
               <p>Die <code>search</code> Methode sucht nach Instanzen, in denen ein bestimmter Text vorkommt. Dabei werden wiederum  nur so viele
 Ergebnisse zurückgegeben, wie durch den Parameter <code>limit</code> angegeben wurde. Entsprechend gibt es auch eine Methode
@@ -187,11 +204,11 @@ Ergebnisse zurückgegeben, wie durch den Parameter <code>limit</code> angegeben 
         </li>
         
         
-        <li id="section-11">
+        <li id="section-12">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-11">&#182;</a>
+                <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
               <p>Für <code>list</code> und <code>search</code> gibt es auch entsprechende Methoden, die nur den ersten Treffer zurückgeben.</p>
 
@@ -203,11 +220,11 @@ Ergebnisse zurückgegeben, wie durch den Parameter <code>limit</code> angegeben 
         </li>
         
         
-        <li id="section-12">
+        <li id="section-13">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
+                <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
               <p>Die <code>create</code> Methode erzeugt eine neue Instanz. Diese wird nicht in Nuclos gespeichert, bis die <code>save</code> Methode
 aufgerufen wird. In dieser Zeit kann die Instanz nur eingeschränkt verwendet werden.</p>
@@ -221,11 +238,11 @@ new_customer.save()</pre></div></div>
         </li>
         
         
-        <li id="section-13">
+        <li id="section-14">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-13">&#182;</a>
+                <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
               <h2 id="instanzen-von-businessobjekten">Instanzen von Businessobjekten</h2>
 
@@ -234,11 +251,11 @@ new_customer.save()</pre></div></div>
         </li>
         
         
-        <li id="section-14">
+        <li id="section-15">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-14">&#182;</a>
+                <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
               <p>Der Titel einer Instanz kann über die Eigenschaft <code>title</code> ausgelesen werden.</p>
 
@@ -249,11 +266,11 @@ new_customer.save()</pre></div></div>
         </li>
         
         
-        <li id="section-15">
+        <li id="section-16">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
+                <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <p>Die Attribute eines Instanz können gelesen werden, wie oben die Businessobjekte aus dem API Objekt.</p>
 <p>Auch hier ist die Groß- und Kleinschreibung egal. Leerzeichen können wieder durch einen Unterstrich ersetzt werden.</p>
@@ -268,11 +285,11 @@ new_customer.save()</pre></div></div>
         </li>
         
         
-        <li id="section-16">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <h3 id="ver-ndern-von-daten">Verändern von Daten</h3>
 
@@ -281,11 +298,11 @@ new_customer.save()</pre></div></div>
         </li>
         
         
-        <li id="section-17">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>Nach dem selben Prinzip können den Attributen neue Werte zugewiesen werden.</p>
 
@@ -299,11 +316,11 @@ customer.set_attribute(&lt;bo_attr_id&gt;, <span class="hljs-string">"john@doe.c
         </li>
         
         
-        <li id="section-18">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>Veränderte Werte von Attributen lassen sich auf der lokalen Instanz sofort wieder auslesen, werden aber erst durch
 einen Aufruf der <code>save</code> Methode auf dem Nuclos Server abgespeichert.</p>
@@ -315,11 +332,11 @@ einen Aufruf der <code>save</code> Methode auf dem Nuclos Server abgespeichert.<
         </li>
         
         
-        <li id="section-19">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>Die <code>refresh</code> Methode sorgt dafür, dass die Daten der Instanz neu vom Server geladen werden. Das ist normalerweise nur
 dann nötig, wenn ein anderer Benutzer die selbe Instanz zwischenzeitlich verändert hat.</p>
@@ -332,11 +349,11 @@ dann nötig, wenn ein anderer Benutzer die selbe Instanz zwischenzeitlich verän
         </li>
         
         
-        <li id="section-20">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>Die <code>delete</code> Methode löscht die Instanz.</p>
 
@@ -347,11 +364,11 @@ dann nötig, wenn ein anderer Benutzer die selbe Instanz zwischenzeitlich verän
         </li>
         
         
-        <li id="section-21">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <h3 id="referenzfelder">Referenzfelder</h3>
 
@@ -360,11 +377,11 @@ dann nötig, wenn ein anderer Benutzer die selbe Instanz zwischenzeitlich verän
         </li>
         
         
-        <li id="section-22">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>Referenzierte Objekte können wie normale Attribute verwendet werden. Das zurückgegebene Object ist wieder eine Instanz
 eines Businessobjektes und kann genau so verwendet werden.</p>
@@ -376,11 +393,11 @@ eines Businessobjektes und kann genau so verwendet werden.</p>
         </li>
         
         
-        <li id="section-23">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>Referenzfelder können wie normale Felder verändert werden. Dabei kann eine Instanz übergeben werden, auf die das
 Referenzfeld zeigen soll.</p>
@@ -394,11 +411,11 @@ order.save()</pre></div></div>
         </li>
         
         
-        <li id="section-24">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>Durch Zuweisen von <code>None</code> kann die Referenz entfernt werden.</p>
 <h3 id="unterformulare">Unterformulare</h3>
@@ -408,11 +425,11 @@ order.save()</pre></div></div>
         </li>
         
         
-        <li id="section-25">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
               <p>Daten aus Unterformularen können nach dem selben Prinzip geladen werden wie Attribute.</p>
 <p>Dabei muss der Name des Businessobjektes verwendet werden, das die Einträge des Unterformulars bildet. Im Beispiel
@@ -433,11 +450,11 @@ Möglichkeiten den Wert des Attributes zurück.</p>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>Setzt man <code>create_</code> vor den Namen des Unterformulars erhält man eine Methode, die einen neuen Eintrag in einem
 Unterformular erzeugt.</p>
@@ -452,11 +469,11 @@ new_position.save()</pre></div></div>
         </li>
         
         
-        <li id="section-27">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               <h3 id="status">Status</h3>
 
@@ -465,11 +482,11 @@ new_position.save()</pre></div></div>
         </li>
         
         
-        <li id="section-28">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>Man kann den aktuellen Status einer Instanz über folgende spezielle Attribute auslesen:</p>
 
@@ -481,11 +498,11 @@ john_doe.current_state_number       <span class="hljs-comment"># = 10</span></pr
         </li>
         
         
-        <li id="section-29">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>Man kann den Status auch ändern, wahlweise über dessen Nummer oder Namen.</p>
 <p>Dabei ist zu beachten, dass die Instanz automatisch aktualisiert wird. Nicht gespeicherte Änderungen gehen
@@ -499,11 +516,11 @@ john_doe.change_to_state_by_name(<span class="hljs-string">"Inactive"</span>)</p
         </li>
         
         
-        <li id="section-30">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <h3 id="aktionen">Aktionen</h3>
 
@@ -512,11 +529,11 @@ john_doe.change_to_state_by_name(<span class="hljs-string">"Inactive"</span>)</p
         </li>
         
         
-        <li id="section-31">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+                <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
               <p>Die Aktion einer Instanz kann ebenfalls über ein spezielles Attribut ausgelesen werden:</p>
 
@@ -527,11 +544,11 @@ john_doe.change_to_state_by_name(<span class="hljs-string">"Inactive"</span>)</p
         </li>
         
         
-        <li id="section-32">
+        <li id="section-33">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-32">&#182;</a>
+                <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
               <p>Man kann die Aktion auch verändern. Im Gegensatz zur Änderung des Status, muss die Instanz dabei explizit gespeichert
 werden.</p>
@@ -544,11 +561,11 @@ john_doe.save()</pre></div></div>
         </li>
         
         
-        <li id="section-33">
+        <li id="section-34">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-33">&#182;</a>
+                <a class="pilcrow" href="#section-34">&#182;</a>
               </div>
               <h2 id="metadaten">Metadaten</h2>
 
@@ -557,11 +574,11 @@ john_doe.save()</pre></div></div>
         </li>
         
         
-        <li id="section-34">
+        <li id="section-35">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-34">&#182;</a>
+                <a class="pilcrow" href="#section-35">&#182;</a>
               </div>
               <p>Die <code>meta</code> Eigenschaft der Klasse <code>BusinessObject</code> (und auch von Instanzen) enthält einige Metadaten.</p>
 
@@ -573,11 +590,11 @@ customer_bo.meta.bo_meta_id</pre></div></div>
         </li>
         
         
-        <li id="section-35">
+        <li id="section-36">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-35">&#182;</a>
+                <a class="pilcrow" href="#section-36">&#182;</a>
               </div>
               <h3 id="attribute">Attribute</h3>
 
@@ -586,11 +603,11 @@ customer_bo.meta.bo_meta_id</pre></div></div>
         </li>
         
         
-        <li id="section-36">
+        <li id="section-37">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-36">&#182;</a>
+                <a class="pilcrow" href="#section-37">&#182;</a>
               </div>
               <p>Auch die Metadaten von Attributen können ausgelesen werden.</p>
 
@@ -612,11 +629,11 @@ email_attr.is_reference</pre></div></div>
         </li>
         
         
-        <li id="section-37">
+        <li id="section-38">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-37">&#182;</a>
+                <a class="pilcrow" href="#section-38">&#182;</a>
               </div>
               <h2 id="exceptions">Exceptions</h2>
 <p>Die Bibliothek wirft im Falle von Fehlern verschiedene Exceptions, die alle von der Klasse <code>NuclosException</code> erben.</p>
