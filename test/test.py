@@ -58,6 +58,12 @@ class TestConnection(NuclosTest):
         self.nuclos.reconnect()
         self.assertIsNone(self.nuclos.session_id)
 
+    def test_04_auto_login(self):
+        # Should automatically get logged in when accessing data.
+        self.assertIsNone(self.nuclos.session_id)
+        _ = self.nuclos.business_objects
+        self.assertIsNotNone(self.nuclos.session_id)
+
 
 class TestBusinessObjects(NuclosTest):
     def test_list(self):
