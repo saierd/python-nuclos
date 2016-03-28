@@ -141,6 +141,12 @@ class TestBusinessObjectInstances(NuclosTest):
         self.assertEqual(sorted_list[0].name, "Jane Doe")
         self.assertEqual(sorted_list[1].name, "John Doe")
 
+        # Where.
+        where_expression = "{} = 'John Doe'".format(self.nuclos.customer.meta["name"].bo_attr_id)
+        where_list = self.nuclos.customer.list_all(where=where_expression)
+        self.assertEqual(len(where_list), 1)
+        self.assertEqual(where_list[0].name, "John Doe")
+
     def test_04_search(self):
         search_list = self.nuclos.customer.search_all("John")
         self.assertEqual(len(search_list), 1)

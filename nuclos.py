@@ -535,7 +535,7 @@ class BusinessObject:
             raise NuclosException("Insert of business object {} not allowed.".format(self.meta.name))
         return BusinessObjectInstance(self._nuclos, self, bo_id)
 
-    def list(self, search=None, offset=0, limit=0, sort=None, fetch_all=False):
+    def list(self, search=None, offset=0, limit=0, sort=None, where=None, fetch_all=False):
         """
         Get a result of instances for this business object.
 
@@ -543,6 +543,7 @@ class BusinessObject:
         :param offset: The number of instances to skip.
         :param limit: The maximum number of instances to load.
         :param sort: An attribute (or the name of an attribute) to sort by.
+        :param where: A query string to filter the attributes.
         :param fetch_all: Whether all instances should be fetched.
         :return: A result of BusinessObjectInstance objects.
         """
@@ -551,7 +552,7 @@ class BusinessObject:
             limit = max(limit, 100)
 
         parameters = {}
-        if search:
+        if search is not None:
             parameters["search"] = search
         if limit:
             parameters["chunkSize"] = limit - 1
@@ -559,7 +560,7 @@ class BusinessObject:
             parameters["offset"] = offset
         current_offset = offset
 
-        if sort:
+        if sort is not None:
             # Allow to give a name of an attribute for sorting.
             if isinstance(sort, str):
                 attr = self.meta.get_attribute_by_name(sort)
@@ -570,6 +571,9 @@ class BusinessObject:
                 parameters["orderBy"] = sort.bo_attr_id
             else:
                 parameters["orderBy"] = sort
+
+        if where is not None:
+            parameters["where"] = where
 
         result = []
 

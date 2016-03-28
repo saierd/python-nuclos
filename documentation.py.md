@@ -55,6 +55,13 @@ Diese Argumente werden auch von allen unten angegebenen Varianten von `list` und
     customer_bo.list(sort=customer_bo.meta.city)
     customer_bo.list(sort="city")
 
+Mit dem Parameter `where` werden auch beliebige Filter unterstützt. Es gibt derzeit allerdings keine einfache
+Möglichkeit, diese aufzubauen. Stattdessen muss ein entsprechender String von Hand aufgebaut werden. Weitere
+Informationen zum Aufbau der Filter erhalten Sie im [Nuclos Wiki](http://wiki.nuclos.de/display/Entwicklung/4.+Businessobjekte+%28BO%29+lesen).
+
+    where_expression = "{} = 'john@doe.com'".format(customer_bo.meta.email.bo_attr_id)
+    customer_bo.list(where=where_expression)
+
 Dabei ist zu beachten, dass die `list` Methode nur einen Teil der Ergebnisse zurückliefert (nämlich gerade so viele,
 wie durch den Parameter `limit` angefordert wurden). Um eine vollständige Liste zu erhalten, kann die Methode `list_all`
 verwendet werden.
