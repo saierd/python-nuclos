@@ -163,8 +163,8 @@ class NuclosAPI:
         :raises: NuclosVersionException if the server version is too low to use the API.
         :raises: NuclosAuthenticationException if the login was not successful.
         """
-        if not self.require_version(4, 5):
-            raise NuclosVersionException("You need at least Nuclos 4.5 to use this version of the REST API.")
+        if not self.require_version(4, 7):
+            raise NuclosVersionException("You need at least Nuclos 4.7 to use this version of the REST API.")
 
         login_data = {
             "username": self.settings.username,
@@ -373,7 +373,7 @@ class NuclosAPI:
             path = "/" + path
 
         url = "http://{}:{}/{}/rest{}".format(quote(self.settings.ip), self.settings.port,
-                                               quote(self.settings.instance), quote(path))
+                                              quote(self.settings.instance), quote(path))
         if param:
             url += "?" + param
 
