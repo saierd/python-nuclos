@@ -54,7 +54,6 @@ Diese Argumente werden auch von allen unten angegebenen Varianten von `list` und
 
     customer_bo.list(sort=customer_bo.meta.city)
     customer_bo.list(sort="city")
-    customer_bo.list(sort_by_title=True)
 
 Dabei ist zu beachten, dass die `list` Methode nur einen Teil der Ergebnisse zurückliefert (nämlich gerade so viele,
 wie durch den Parameter `limit` angefordert wurden). Um eine vollständige Liste zu erhalten, kann die Methode `list_all`

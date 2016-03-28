@@ -531,7 +531,7 @@ class BusinessObject:
             raise NuclosException("Insert of business object {} not allowed.".format(self.meta.name))
         return BusinessObjectInstance(self._nuclos, self, bo_id)
 
-    def list(self, search=None, offset=0, limit=0, sort=None, sort_by_title=False, fetch_all=False):
+    def list(self, search=None, offset=0, limit=0, sort=None, fetch_all=False):
         """
         Get a result of instances for this business object.
 
@@ -539,7 +539,6 @@ class BusinessObject:
         :param offset: The number of instances to skip.
         :param limit: The maximum number of instances to load.
         :param sort: An attribute (or the name of an attribute) to sort by.
-        :param sort_by_title: Whether the result should be sorted by the instance titles.
         :param fetch_all: Whether all instances should be fetched.
         :return: A result of BusinessObjectInstance objects.
         """
@@ -567,9 +566,6 @@ class BusinessObject:
                 parameters["orderBy"] = sort.bo_attr_id
             else:
                 parameters["orderBy"] = sort
-
-        if sort_by_title:
-            parameters["orderBy"] = "BOTITLE"
 
         result = []
 

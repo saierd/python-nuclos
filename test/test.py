@@ -125,11 +125,6 @@ class TestBusinessObjectInstances(NuclosTest):
         unsorted_list = self.nuclos.customer.list_all()
         self.assertCountEqual([c.name for c in unsorted_list], ["John Doe", "Jane Doe"])
 
-        # Sort by title.
-        sorted_list = self.nuclos.customer.list_all(sort_by_title=True)
-        self.assertEqual(sorted_list[0].name, "Jane Doe")
-        self.assertEqual(sorted_list[1].name, "John Doe")
-
         # Sort by attribute.
         sorted_list = self.nuclos.customer.list_all(sort=self.nuclos.customer.meta.email)
         self.assertEqual(sorted_list[0].name, "Jane Doe")
