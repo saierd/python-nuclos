@@ -6,7 +6,7 @@ A Python library for the REST API of [Nuclos](http://www.nuclos.de/).
 
 | Version                                                         | Compatible Nuclos versions | Download |
 | --------------------------------------------------------------- | -------------------------- | -------- |
-| [1.5](https://github.com/saierd/python-nuclos/releases/tag/1.5) | >= 4.7.2                   | [zip](https://github.com/saierd/python-nuclos/releases/download/1.5/python-nuclos-1.5.zip) |
+| [1.5](https://github.com/saierd/python-nuclos/releases/tag/1.5) | ≥ 4.7.2                    | [zip](https://github.com/saierd/python-nuclos/releases/download/1.5/python-nuclos-1.5.zip) |
 | [1.4](https://github.com/saierd/python-nuclos/releases/tag/1.4) | 4.5.*                      | [zip](https://github.com/saierd/python-nuclos/releases/download/1.4/python-nuclos-1.4.zip) |
 | [1.0](https://github.com/saierd/python-nuclos/releases/tag/1.0) | 4.4.0                      | [zip](https://github.com/saierd/python-nuclos/releases/download/1.0/python-nuclos-1.0.zip) |
 
