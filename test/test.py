@@ -7,8 +7,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from nuclos import NuclosAPI, AttributeMeta, BusinessObject, BusinessObjectInstance, BusinessObjectMeta, NuclosException
 
 NUCLOS_VERSION_MAJOR = 4
-NUCLOS_VERSION_MINOR = 7
-NUCLOS_VERSION_REVISION = 2
+NUCLOS_VERSION_MINOR = 8
+NUCLOS_VERSION_REVISION = 4
 
 # Note: We give most of the tests a number to make sure they are executed in the same order as they are specified. This
 #       might not be the best practice but it is very convenient in this case, as the tests heavily depend on the
