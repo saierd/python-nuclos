@@ -208,6 +208,27 @@ werden.
     john_doe.set_process("Individual Client")
     john_doe.save()
 
+### Dokumente
+
+    #
+
+Um eine Datei in ein Dokumentenfeld hochzuladen, kann dem entsprechenden Attribut einfach der Pfad zur Datei
+zugewiesen werden.
+
+    john_doe.contract = "contract.pdf"
+    john_doe.save()
+
+Greift man nun auf dieses Attribut zu, erhält man nicht die Datei, sondern nur den Dateinamen.
+
+    john_doe.contract                   # = "contract.pdf"
+
+Um die Datei wieder herunterzuladen, wird die Methode `download_document` benutzt. Dieser wird der Name des
+Attributes und optional ein Pfad übergeben, in dem die Datei gespeichert werden soll. Ist kein Pfad angegeben, dann
+wird die Datei unter ihrem ursprünglichen Namen im aktuellen Arbeitsverzeichnis abgespeichert.
+
+    john_doe.download_document("contract", "some_path/some_file.pdf")
+    john_doe.download_document("contract")
+
 ## Metadaten
 
     #
@@ -234,7 +255,8 @@ Auch die Metadaten von Attributen können ausgelesen werden.
     email_attr.bo_attr_id
     email_attr.type                     # = "String"
     email_attr.is_writeable
-    email_attr.is_reference
+    email_attr.is_reference             # = False
+    email_attr.is_document              # = False
 
 ## Exceptions
 
@@ -246,7 +268,7 @@ wird eine `NuclosAuthenticationException` geworfen.
 Fall einem Attribut ein falscher Wert zugewiesen wird, wird eine `NuclosValueException` geworfen.
 
 Wenn die verwendete Version des Nuclos Servers ein bestimmtes Feature nicht unterstützt wird eine
-`NuclosVersionException` geworfen. 
+`NuclosVersionException` geworfen.
 
 Im Falle von HTTP Fehlern wirft die Bibliothek eine `NuclosHTTPException`. Diese hat die Eigenschaften `code` und
 `reason`, die den empfangenen HTTP Statuscode bzw. die dazugehörige Beschreibung enthalten.

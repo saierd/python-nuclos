@@ -13,12 +13,15 @@ if sys.version_info[0] < 3 or (sys.version_info[0] == 3 and sys.version_info[1] 
     print("This library needs at least Python 3.3!")
     sys.exit(1)
 
+import base64
 import collections
 import configparser
 import functools
 import json
 import locale
 import logging
+import os
+import shutil
 import urllib.request
 import urllib.parse
 
@@ -32,6 +35,7 @@ BO_INSTANCE_ROUTE = "bos/{}/{}"
 BO_DEPENDENCY_LIST_ROUTE = "bos/{}/{}/subBos/{}"
 BO_DEPENDENCY_META_ROUTE = "boMetas/{}/subBos/{}"
 STATE_CHANGE_ROUTE = "boStateChanges/{}/{}/{}"
+DOCUMENT_ROUTE = "boDocuments/{}/{}/documents/{}"
 
 
 class NuclosSettings:
@@ -290,7 +294,7 @@ class NuclosAPI:
     def business_objects(self):
         return [self.get_business_object(bo["boMetaId"]) for bo in self._business_objects]
 
-    def request(self, path, parameters=None, data=None, method=None, auto_login=True, json_answer=True):
+    def request(self, path, parameters=None, data=None, method=None, auto_login=True, json_answer=True, filename=None):
         """
         Send a request to the Nuclos server.
 
@@ -300,6 +304,7 @@ class NuclosAPI:
         :param method: The HTTP method to use. If not set this will be GET or POST, depending on the data.
         :param auto_login: Try to log in automatically in case of a 401 error.
         :param json_answer: Parse the servers answer as JSON.
+        :param filename: A file to save the downloaded data in.
         :return: The answer of the server. None in case of an error.
         :raise: URLError in case of an HTTP error. Returns None instead if the 'handle_http_errors' option is set.
         """
@@ -328,6 +333,12 @@ class NuclosAPI:
 
         try:
             result = urllib.request.urlopen(request)
+
+            if filename is not None:
+                with open(filename, "wb") as f:
+                    shutil.copyfileobj(result, f)
+                    return None
+
             answer = result.read().decode()
             if answer:
                 logging.debug("Received answer {}".format(answer))
@@ -349,6 +360,9 @@ class NuclosAPI:
             else:
                 logging.error("HTTP Error {}: {}".format(e.code, e.reason))
                 raise NuclosHTTPException(e)
+
+    def download_file(self, path, filename):
+        return self.request(path, json_answer=False, filename=filename)
 
     def _build_url(self, path, parameters=None):
         """
@@ -507,6 +521,10 @@ class AttributeMeta:
         return self._data["reference"]
 
     @property
+    def is_document(self):
+        return self.type.lower() == "document"
+
+    @property
     def _referenced_bo_id(self):
         return self._data["referencingBoMetaId"]
 
@@ -655,7 +673,6 @@ class BusinessObject:
 
 
 class BusinessObjectInstance:
-    # TODO: Document fields.
     # TODO: Call business rules.
     # TODO: Generators.
     def __init__(self, nuclos, business_object, bo_id=None):
@@ -855,6 +872,31 @@ class BusinessObjectInstance:
             data["version"] = self.data["version"]
         return data
 
+    def download_document_by_id(self, bo_attr_id, filename=None):
+        """
+        Download a file.
+
+        :param bo_attr_id: The id of the document attribute.
+        :param filename: The path where the file should be saved to.
+        """
+        if filename is None:
+            filename = self.get_attribute(bo_attr_id)
+
+        url = DOCUMENT_ROUTE.format(self.meta.bo_meta_id, self.id, bo_attr_id)
+        return self._nuclos.download_file(url, filename)
+
+    def download_document(self, name, filename=None):
+        """
+        Download a file.
+
+        :param name: The name of the document attribute.
+        :param filename: The path where the file should be saved to.
+        """
+        attr = self._business_object.meta.get_attribute_by_name(name)
+        if attr:
+            return self.download_document_by_id(attr.bo_attr_id, filename)
+        raise AttributeError("Unknown attribute '{}'.".format(name))
+
     def _dependency_list_url(self, dependency_id):
         if not self._bo_id:
             raise NuclosException("Attempting to access data of an uninitialized business object instance.")
@@ -947,7 +989,7 @@ class BusinessObjectInstance:
         """
         Get the value of an attribute.
 
-        :param bo_attr_id: The attribute id to get the value of.
+        :param bo_attr_id: The id of the attribute we want to get the value of.
         :return: The attribute's value.
         :raise: AttributeError if the attribute does not exist.
         """
@@ -970,6 +1012,8 @@ class BusinessObjectInstance:
 
         if attr.is_reference and data is not None:
             return attr.referenced_bo().get(data["id"])
+        elif attr.is_document and data is not None:
+            return data["name"]
         return data
 
     def get_attribute_by_name(self, name):
@@ -1048,6 +1092,19 @@ class BusinessObjectInstance:
                 value = {
                     "id": value.id,
                     "name": value.title
+                }
+        elif attr.is_document:
+            # The attribute is a file.
+            if value is not None:
+                filename = value
+
+                encoded_file = ""
+                with open(filename, "rb") as f:
+                    encoded_file = base64.b64encode(f.read()).decode("utf-8")
+
+                value = {
+                    "data": encoded_file,
+                    "name": os.path.basename(filename)
                 }
         elif attr.type == "String" and not isinstance(value, str):
             # Don't convert None to "None".
