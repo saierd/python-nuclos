@@ -567,7 +567,7 @@ john_doe.save()</pre></div></div>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-34">&#182;</a>
               </div>
-              <h2 id="metadaten">Metadaten</h2>
+              <h3 id="dokumente">Dokumente</h3>
 
             </div>
             
@@ -580,12 +580,13 @@ john_doe.save()</pre></div></div>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-35">&#182;</a>
               </div>
-              <p>Die <code>meta</code> Eigenschaft der Klasse <code>BusinessObject</code> (und auch von Instanzen) enthält einige Metadaten.</p>
+              <p>Um eine Datei in ein Dokumentenfeld hochzuladen, kann dem entsprechenden Attribut einfach der Pfad zur Datei
+zugewiesen werden.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>customer_bo.meta.name               <span class="hljs-comment"># = "Customer"</span>
-customer_bo.meta.bo_meta_id</pre></div></div>
+            <div class="content"><div class='highlight'><pre>john_doe.contract = <span class="hljs-string">"contract.pdf"</span>
+john_doe.save()</pre></div></div>
             
         </li>
         
@@ -596,9 +597,11 @@ customer_bo.meta.bo_meta_id</pre></div></div>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-36">&#182;</a>
               </div>
-              <h3 id="attribute">Attribute</h3>
+              <p>Greift man nun auf dieses Attribut zu, erhält man nicht die Datei, sondern nur den Dateinamen.</p>
 
             </div>
+            
+            <div class="content"><div class='highlight'><pre>john_doe.contract                   <span class="hljs-comment"># = "contract.pdf"</span></pre></div></div>
             
         </li>
         
@@ -608,6 +611,66 @@ customer_bo.meta.bo_meta_id</pre></div></div>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-37">&#182;</a>
+              </div>
+              <p>Um die Datei wieder herunterzuladen, wird die Methode <code>download_document</code> benutzt. Dieser wird der Name des
+Attributes und optional ein Pfad übergeben, in dem die Datei gespeichert werden soll. Ist kein Pfad angegeben, dann
+wird die Datei unter ihrem ursprünglichen Namen im aktuellen Arbeitsverzeichnis abgespeichert.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>john_doe.download_document(<span class="hljs-string">"contract"</span>, <span class="hljs-string">"some_path/some_file.pdf"</span>)
+john_doe.download_document(<span class="hljs-string">"contract"</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-38">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-38">&#182;</a>
+              </div>
+              <h2 id="metadaten">Metadaten</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-39">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-39">&#182;</a>
+              </div>
+              <p>Die <code>meta</code> Eigenschaft der Klasse <code>BusinessObject</code> (und auch von Instanzen) enthält einige Metadaten.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>customer_bo.meta.name               <span class="hljs-comment"># = "Customer"</span>
+customer_bo.meta.bo_meta_id</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-40">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-40">&#182;</a>
+              </div>
+              <h3 id="attribute">Attribute</h3>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-41">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-41">&#182;</a>
               </div>
               <p>Auch die Metadaten von Attributen können ausgelesen werden.</p>
 
@@ -624,16 +687,17 @@ email_attr.name                     <span class="hljs-comment"># = "E-Mail"</spa
 email_attr.bo_attr_id
 email_attr.type                     <span class="hljs-comment"># = "String"</span>
 email_attr.is_writeable
-email_attr.is_reference</pre></div></div>
+email_attr.is_reference             <span class="hljs-comment"># = False</span>
+email_attr.is_document              <span class="hljs-comment"># = False</span></pre></div></div>
             
         </li>
         
         
-        <li id="section-38">
+        <li id="section-42">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-38">&#182;</a>
+                <a class="pilcrow" href="#section-42">&#182;</a>
               </div>
               <h2 id="exceptions">Exceptions</h2>
 <p>Die Bibliothek wirft im Falle von Fehlern verschiedene Exceptions, die alle von der Klasse <code>NuclosException</code> erben.</p>
@@ -641,7 +705,7 @@ email_attr.is_reference</pre></div></div>
 wird eine <code>NuclosAuthenticationException</code> geworfen.</p>
 <p>Fall einem Attribut ein falscher Wert zugewiesen wird, wird eine <code>NuclosValueException</code> geworfen.</p>
 <p>Wenn die verwendete Version des Nuclos Servers ein bestimmtes Feature nicht unterstützt wird eine
-<code>NuclosVersionException</code> geworfen. </p>
+<code>NuclosVersionException</code> geworfen.</p>
 <p>Im Falle von HTTP Fehlern wirft die Bibliothek eine <code>NuclosHTTPException</code>. Diese hat die Eigenschaften <code>code</code> und
 <code>reason</code>, die den empfangenen HTTP Statuscode bzw. die dazugehörige Beschreibung enthalten.</p>
 
