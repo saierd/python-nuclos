@@ -3,9 +3,11 @@ __pycache__/
 *.pyc
 
 # Configuration files.
-*.ini
+/*.ini
 !default.ini
-!test/test.ini
+
+# Some test scripts.
+/test*.py
 
 # Build directory.
 release/
@@ -15,6 +17,9 @@ documentation/
 
 # Vagrant machine for tests.
 test/.vagrant/
+
+# Scripts for settings up the test server.
+test/nuclos.sh
 
 # Information about test coverage.
 test/.coverage
