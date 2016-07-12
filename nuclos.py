@@ -3,7 +3,7 @@ Copyright (c) 2014-2016 Daniel Saier
 
 This project is licensed under the terms of the MIT license. See the LICENSE file.
 """
-__version__ = "1.5"
+__version__ = "1.6"
 
 # TODO: Support SSL.
 
