@@ -7,8 +7,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from nuclos import NuclosAPI, AttributeMeta, BusinessObject, BusinessObjectInstance, BusinessObjectMeta, NuclosException
 
 NUCLOS_VERSION_MAJOR = 4
-NUCLOS_VERSION_MINOR = 8
-NUCLOS_VERSION_REVISION = 4
+NUCLOS_VERSION_MINOR = 10
+NUCLOS_VERSION_REVISION = 2
 
 # Note: We give most of the tests a number to make sure they are executed in the same order as they are specified. This
 #       might not be the best practice but it is very convenient in this case, as the tests heavily depend on the
@@ -69,9 +69,14 @@ class TestBusinessObjects(NuclosTest):
     def test_list(self):
         bos = self.nuclos.business_objects
 
-        self.assertEqual(len(bos), 2)
         for bo in bos:
             self.assertIsInstance(bo, BusinessObject)
+
+        # Filter out business objects from Nuclos itself
+        bos = [bo for bo in bos if not bo.bo_meta_id.startswith("org_nuclos")]
+
+        # Then there should be two objects left (customers and orders).
+        self.assertEqual(len(bos), 2)
 
     def test_business_object_retrieval(self):
         self.assertIsInstance(self.nuclos.customer, BusinessObject)
