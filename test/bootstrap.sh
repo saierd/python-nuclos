@@ -4,6 +4,6 @@
 cp python-nuclos/test/nuclos.sh .
 
 ./nuclos.sh install postgres
-./nuclos.sh install 4.10.2
+./nuclos.sh install 4.17.5
 
 ./nuclos.sh import python-nuclos/test/test.nuclet
