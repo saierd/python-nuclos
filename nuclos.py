@@ -1010,10 +1010,10 @@ class BusinessObjectInstance:
                 return False
             return None
 
-        if attr.is_reference and data is not None:
-            return attr.referenced_bo().get(data["id"])
-        elif attr.is_document and data is not None:
+        if attr.is_document and data is not None:
             return data["name"]
+        elif attr.is_reference and data is not None:
+            return attr.referenced_bo().get(data["id"])
         return data
 
     def get_attribute_by_name(self, name):
@@ -1075,7 +1075,21 @@ class BusinessObjectInstance:
         if value is None and not attr.is_nullable:
             raise NuclosAuthenticationException("Attribute '{}' is not nullable.".format(attr.name))
 
-        if attr.is_reference:
+        if attr.is_document:
+            # The attribute is a file.
+            # Care: this case must be first, because document attributes are also marked as references.
+            if value is not None:
+                filename = value
+
+                encoded_file = ""
+                with open(filename, "rb") as f:
+                    encoded_file = base64.b64encode(f.read()).decode("utf-8")
+
+                value = {
+                    "data": encoded_file,
+                    "name": os.path.basename(filename)
+                }
+        elif attr.is_reference:
             if value is None:
                 value = {
                     "id": None,
@@ -1092,19 +1106,6 @@ class BusinessObjectInstance:
                 value = {
                     "id": value.id,
                     "name": value.title
-                }
-        elif attr.is_document:
-            # The attribute is a file.
-            if value is not None:
-                filename = value
-
-                encoded_file = ""
-                with open(filename, "rb") as f:
-                    encoded_file = base64.b64encode(f.read()).decode("utf-8")
-
-                value = {
-                    "data": encoded_file,
-                    "name": os.path.basename(filename)
                 }
         elif attr.type == "String" and not isinstance(value, str):
             # Don't convert None to "None".
