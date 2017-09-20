@@ -1034,8 +1034,10 @@ class BusinessObjectInstance:
 
         if attr.is_document and data is not None:
             return data["name"]
-        elif attr.is_reference and data is not None:
-            return attr.referenced_bo().get(data["id"])
+        elif attr.is_reference:
+            if data is not None and data["id"] is not None:
+                return attr.referenced_bo().get(data["id"])
+            return None
         return data
 
     def get_attribute_by_name(self, name):
