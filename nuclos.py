@@ -140,6 +140,8 @@ class NuclosAPI:
         self.settings = NuclosSettings(setting_file)
         self.session_id = None
 
+        self.bo_namespaces = []
+
     @property
     @Cached
     def version(self):
@@ -263,6 +265,17 @@ class NuclosAPI:
             return BusinessObject(self, bo_meta_id)
         return None
 
+    def add_business_object_namespace(self, namespace):
+        """
+        Add a (Java/Nuclet) namespace in which we search for business objects. This is a workaround
+        for some versions of Nuclos which don't properly include the business object names for all
+        business ojects in the meta data.
+
+        :param namespace: The Java/Nuclet namespace as is it used by the Nuclos REST API
+                          (e.g. `com.company` should be specified as `com_company`).
+        """
+        self.bo_namespaces.append(namespace)
+
     def get_business_object_by_name(self, name):
         """
         Get a business object by its name.
@@ -273,6 +286,15 @@ class NuclosAPI:
         bo_meta_id = self._get_bo_meta_id(name)
         if bo_meta_id:
             return self.get_business_object(bo_meta_id)
+
+        # Try to guess the business object from Nuclet namespaces. This is a workaround for a Nuclos
+        # bug, see the the add_business_object_namespace method above.
+        for namespace in self.bo_namespaces:
+            for name in [name, name.capitalize()]:
+                candidate_meta_id = namespace + "_" + name
+                if self._bo_meta_id_exists(candidate_meta_id):
+                    return self.get_business_object(candidate_meta_id)
+
         return None
 
     def __getattr__(self, name):
