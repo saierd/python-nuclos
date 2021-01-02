@@ -37,6 +37,8 @@ BO_DEPENDENCY_META_ROUTE = "boMetas/{}/subBos/{}"
 STATE_CHANGE_ROUTE = "boStateChanges/{}/{}/{}"
 DOCUMENT_ROUTE = "boDocuments/{}/{}/documents/{}"
 
+HTTP_PROTOCOL = "http"
+
 
 class NuclosSettings:
     def __init__(self, filename):
@@ -334,7 +336,9 @@ class NuclosAPI:
             self.login()
 
         url = path
-        if not url.startswith("http"):
+        if url.startswith("//"):
+            url = HTTP_PROTOCOL + ":" + url
+        if not url.startswith(HTTP_PROTOCOL):
             url = self._build_url(path, parameters)
         request = urllib.request.Request(url)
         if json_answer:
@@ -408,7 +412,7 @@ class NuclosAPI:
         if not path.startswith("/"):
             path = "/" + path
 
-        url = "http://{}:{}/{}/rest{}".format(quote(self.settings.ip), self.settings.port,
+        url = "{}://{}:{}/{}/rest{}".format(HTTP_PROTOCOL, quote(self.settings.ip), self.settings.port,
                                               quote(self.settings.instance), quote(path))
         if param:
             url += "?" + param
