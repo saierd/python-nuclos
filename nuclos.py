@@ -1,5 +1,5 @@
 """
-Copyright (c) 2014-2016 Daniel Saier
+Copyright (c) 2014-2021 Daniel Saier
 
 This project is licensed under the terms of the MIT license. See the LICENSE file.
 """
