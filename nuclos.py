@@ -758,8 +758,21 @@ class BusinessObjectInstance:
             return None
 
     def _get_state_id(self, number):
+        def number_for_state(state):
+            # Older versions of the REST API include the state number in the JSON data.
+            if "number" in state:
+                return state["number"]
+            
+            # Newer versions don't contain it anymore. Try to extract the number from the ID.
+            state_id = state["nuclosStateId"]
+            state_number = state_id[state_id.rindex("_") + 1:]
+            if state_number.isdigit():
+                return int(state_number)
+            
+            return None
+
         for next_state in self.data["nextStates"]:
-            if next_state["number"] == number:
+            if number_for_state(next_state) == number:
                 return next_state["nuclosStateId"]
         raise NuclosValueException("Unknown state '{}'.".format(number))
 
