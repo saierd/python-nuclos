@@ -100,7 +100,7 @@ class Cached:
         self.cache = {}
 
     def __call__(self, *args):
-        if not isinstance(args, collections.Hashable):
+        if not isinstance(args, collections.abc.Hashable):
             return self.f(*args)
         if args not in self.cache:
             # noinspection PyArgumentList
