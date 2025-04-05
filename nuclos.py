@@ -1074,7 +1074,7 @@ class BusinessObjectInstance:
         # Allow creation of dependent objects with instance.create_<name>()
         if name.startswith("create_"):
             cname = name[7:]
-            if not self._get_dependency_id_by_name(cname) is None:
+            if self._get_dependency_id_by_name(cname) is not None:
                 def create_dependency():
                     return self.create_dependency_by_name(cname)
 
