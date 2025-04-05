@@ -4,7 +4,14 @@ import unittest
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-from nuclos import NuclosAPI, AttributeMeta, BusinessObject, BusinessObjectInstance, BusinessObjectMeta, NuclosException
+from nuclos import (
+    NuclosAPI,
+    AttributeMeta,
+    BusinessObject,
+    BusinessObjectInstance,
+    BusinessObjectMeta,
+    NuclosException,
+)
 
 NUCLOS_VERSION_MAJOR = 4
 NUCLOS_VERSION_MINOR = 20
@@ -24,17 +31,31 @@ class NuclosTest(unittest.TestCase):
 
 class TestConnection(NuclosTest):
     def test_version(self):
-        self.assertEqual(self.nuclos.version, "{}.{}.{}".format(NUCLOS_VERSION_MAJOR, NUCLOS_VERSION_MINOR,
-                                                                NUCLOS_VERSION_REVISION))
+        self.assertEqual(
+            self.nuclos.version,
+            "{}.{}.{}".format(
+                NUCLOS_VERSION_MAJOR, NUCLOS_VERSION_MINOR, NUCLOS_VERSION_REVISION
+            ),
+        )
 
     def test_require_version(self):
-        self.assertTrue(self.nuclos.require_version(NUCLOS_VERSION_MAJOR, NUCLOS_VERSION_MINOR))
-        self.assertTrue(self.nuclos.require_version(NUCLOS_VERSION_MAJOR, NUCLOS_VERSION_MINOR,
-                                                    NUCLOS_VERSION_REVISION))
+        self.assertTrue(
+            self.nuclos.require_version(NUCLOS_VERSION_MAJOR, NUCLOS_VERSION_MINOR)
+        )
+        self.assertTrue(
+            self.nuclos.require_version(
+                NUCLOS_VERSION_MAJOR, NUCLOS_VERSION_MINOR, NUCLOS_VERSION_REVISION
+            )
+        )
 
-        self.assertFalse(self.nuclos.require_version(NUCLOS_VERSION_MAJOR, NUCLOS_VERSION_MINOR,
-                                                     NUCLOS_VERSION_REVISION + 1))
-        self.assertFalse(self.nuclos.require_version(NUCLOS_VERSION_MAJOR, NUCLOS_VERSION_MINOR + 1))
+        self.assertFalse(
+            self.nuclos.require_version(
+                NUCLOS_VERSION_MAJOR, NUCLOS_VERSION_MINOR, NUCLOS_VERSION_REVISION + 1
+            )
+        )
+        self.assertFalse(
+            self.nuclos.require_version(NUCLOS_VERSION_MAJOR, NUCLOS_VERSION_MINOR + 1)
+        )
 
     def test_00_logout_without_login(self):
         self.assertIsNone(self.nuclos.session_id)
@@ -81,7 +102,9 @@ class TestBusinessObjects(NuclosTest):
     def test_business_object_retrieval(self):
         self.assertIsInstance(self.nuclos.customer, BusinessObject)
         self.assertIsInstance(self.nuclos["customer"], BusinessObject)
-        self.assertIsInstance(self.nuclos.get_business_object_by_name("customer"), BusinessObject)
+        self.assertIsInstance(
+            self.nuclos.get_business_object_by_name("customer"), BusinessObject
+        )
 
         self.assertRaises(AttributeError, lambda: self.nuclos.non_existent_bo)
         self.assertRaises(IndexError, lambda: self.nuclos["non_existent_bo"])
@@ -137,7 +160,9 @@ class TestBusinessObjectInstances(NuclosTest):
         self.assertCountEqual([c.name for c in unsorted_list], ["John Doe", "Jane Doe"])
 
         # Sort by attribute.
-        sorted_list = self.nuclos.customer.list_all(sort=self.nuclos.customer.meta.email)
+        sorted_list = self.nuclos.customer.list_all(
+            sort=self.nuclos.customer.meta.email
+        )
         self.assertEqual(sorted_list[0].name, "Jane Doe")
         self.assertEqual(sorted_list[1].name, "John Doe")
 
@@ -147,7 +172,9 @@ class TestBusinessObjectInstances(NuclosTest):
         self.assertEqual(sorted_list[1].name, "John Doe")
 
         # Where.
-        where_expression = "{} = 'John Doe'".format(self.nuclos.customer.meta["name"].bo_attr_id)
+        where_expression = "{} = 'John Doe'".format(
+            self.nuclos.customer.meta["name"].bo_attr_id
+        )
         where_list = self.nuclos.customer.list_all(where=where_expression)
         self.assertEqual(len(where_list), 1)
         self.assertEqual(where_list[0].name, "John Doe")
@@ -162,7 +189,9 @@ class TestBusinessObjectInstances(NuclosTest):
         self.assertEqual(search_list[0].name, "Jane Doe")
 
         # Search one.
-        self.assertIsInstance(self.nuclos.customer.search_one("John"), BusinessObjectInstance)
+        self.assertIsInstance(
+            self.nuclos.customer.search_one("John"), BusinessObjectInstance
+        )
         self.assertIsNone(self.nuclos.customer.search_one("Bob"))
 
         # No result.
@@ -197,7 +226,9 @@ class TestBusinessObjectInstances(NuclosTest):
 
         self.assertRaises(AttributeError, lambda: john.non_existent_attribute)
         self.assertRaises(AttributeError, lambda: john["non_existent_attribute"])
-        self.assertRaises(AttributeError, lambda: john.get_attribute_by_name("non_existent_attribute"))
+        self.assertRaises(
+            AttributeError, lambda: john.get_attribute_by_name("non_existent_attribute")
+        )
 
         self.assertRaises(TypeError, lambda: john[0])
 
@@ -272,7 +303,10 @@ class TestBusinessObjectInstances(NuclosTest):
         self.assertEqual(len(john["order"]), 2)
         self.assertEqual(len(john.get_dependencies_by_name("order")), 2)
 
-        self.assertRaises(AttributeError, lambda: john.get_dependencies_by_namee("non_existent_dependency"))
+        self.assertRaises(
+            AttributeError,
+            lambda: john.get_dependencies_by_namee("non_existent_dependency"),
+        )
 
     def test_13_state(self):
         john = self.nuclos.customer.search_one("John")
@@ -334,7 +368,9 @@ class TestMetaData(NuclosTest):
 
         self.assertIsInstance(customer_meta.email, AttributeMeta)
         self.assertIsInstance(customer_meta["email"], AttributeMeta)
-        self.assertIsInstance(customer_meta.get_attribute_by_name("email"), AttributeMeta)
+        self.assertIsInstance(
+            customer_meta.get_attribute_by_name("email"), AttributeMeta
+        )
 
         self.assertRaises(AttributeError, lambda: customer_meta.non_existent_attribute)
         self.assertRaises(IndexError, lambda: customer_meta["non_existent_attribute"])
@@ -358,7 +394,10 @@ class TestMetaData(NuclosTest):
 
         # Reference attribute.
         self.assertTrue(self.nuclos.order.meta.customer.is_reference)
-        self.assertIsInstance(self.nuclos.order.meta.customer.referenced_bo(), BusinessObject)
+        self.assertIsInstance(
+            self.nuclos.order.meta.customer.referenced_bo(), BusinessObject
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

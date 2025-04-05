@@ -3,6 +3,7 @@ Copyright (c) 2014-2024 Daniel Saier
 
 This project is licensed under the terms of the MIT license. See the LICENSE file.
 """
+
 __version__ = "1.7"
 
 # TODO: Support SSL.
@@ -45,17 +46,25 @@ class NuclosSettings:
         self.config = configparser.ConfigParser(interpolation=None)
         self.config.read(filename)
 
-        log_level_config = self.config.get("nuclos", "log_level", fallback="INFO").upper()
+        log_level_config = self.config.get(
+            "nuclos", "log_level", fallback="INFO"
+        ).upper()
         log_level = getattr(logging, log_level_config, None)
         if not isinstance(log_level, int):
             raise ValueError("Unknown log level '{}'.".format(log_level_config))
-        log_format = self.config.get("nuclos", "log_format", fallback="%(levelname)s %(asctime)s\t%(message)s")
+        log_format = self.config.get(
+            "nuclos", "log_format", fallback="%(levelname)s %(asctime)s\t%(message)s"
+        )
         log_format = bytes(log_format, "utf-8").decode("unicode_escape")
-        date_format = self.config.get("nuclos", "log_date_format", fallback="%d.%m.%Y %H:%M:%S")
+        date_format = self.config.get(
+            "nuclos", "log_date_format", fallback="%d.%m.%Y %H:%M:%S"
+        )
         date_format = bytes(date_format, "utf-8").decode("unicode_escape")
         log_file = self.config.get("nuclos", "log_file", fallback="")
 
-        logging.basicConfig(filename=log_file, datefmt=date_format, format=log_format, level=log_level)
+        logging.basicConfig(
+            filename=log_file, datefmt=date_format, format=log_format, level=log_level
+        )
 
     @property
     def ip(self):
@@ -172,12 +181,14 @@ class NuclosAPI:
         :raises: NuclosAuthenticationException if the login was not successful.
         """
         if not self.require_version(4, 7):
-            raise NuclosVersionException("You need at least Nuclos 4.7 to use this version of the REST API.")
+            raise NuclosVersionException(
+                "You need at least Nuclos 4.7 to use this version of the REST API."
+            )
 
         login_data = {
             "username": self.settings.username,
             "password": self.settings.password,
-            "locale": self.settings.locale
+            "locale": self.settings.locale,
         }
 
         answer = self.request(LOGIN_ROUTE, data=login_data, auto_login=False)
@@ -316,9 +327,20 @@ class NuclosAPI:
     @property
     @Cached
     def business_objects(self):
-        return [self.get_business_object(bo["boMetaId"]) for bo in self._business_objects]
+        return [
+            self.get_business_object(bo["boMetaId"]) for bo in self._business_objects
+        ]
 
-    def request(self, path, parameters=None, data=None, method=None, auto_login=True, json_answer=True, filename=None):
+    def request(
+        self,
+        path,
+        parameters=None,
+        data=None,
+        method=None,
+        auto_login=True,
+        json_answer=True,
+        filename=None,
+    ):
         """
         Send a request to the Nuclos server.
 
@@ -353,7 +375,11 @@ class NuclosAPI:
         if self.session_id:
             request.add_header("Cookie", "JSESSIONID=" + str(self.session_id))
 
-        logging.debug("Sending {} request to {}.".format(request.get_method(), request.get_full_url()))
+        logging.debug(
+            "Sending {} request to {}.".format(
+                request.get_method(), request.get_full_url()
+            )
+        )
         if request.data:
             logging.debug("Sending data {}.".format(request.data))
 
@@ -380,7 +406,13 @@ class NuclosAPI:
                 logging.info("Unauthorized. Trying to log in again.")
                 self.session_id = None
                 self.login()
-                return self.request(path, data=data, method=method, auto_login=False, json_answer=json_answer)
+                return self.request(
+                    path,
+                    data=data,
+                    method=method,
+                    auto_login=False,
+                    json_answer=json_answer,
+                )
             elif e.code == 403:
                 raise NuclosAuthenticationException()
             else:
@@ -407,13 +439,21 @@ class NuclosAPI:
 
         if not parameters:
             parameters = {}
-        param = "&".join("{}={}".format(quote_all(str(k)), quote_all(str(parameters[k]))) for k in parameters)
+        param = "&".join(
+            "{}={}".format(quote_all(str(k)), quote_all(str(parameters[k])))
+            for k in parameters
+        )
 
         if not path.startswith("/"):
             path = "/" + path
 
-        url = "{}://{}:{}/{}/rest{}".format(HTTP_PROTOCOL, quote(self.settings.ip), self.settings.port,
-                                              quote(self.settings.instance), quote(path))
+        url = "{}://{}:{}/{}/rest{}".format(
+            HTTP_PROTOCOL,
+            quote(self.settings.ip),
+            self.settings.port,
+            quote(self.settings.instance),
+            quote(path),
+        )
         if param:
             url += "?" + param
 
@@ -522,7 +562,7 @@ class AttributeMeta:
         """
         data_index = self.bo_attr_id
         if data_index.startswith(self._business_object.bo_meta_id):
-            data_index = data_index[len(self._business_object.bo_meta_id) + 1:]
+            data_index = data_index[len(self._business_object.bo_meta_id) + 1 :]
 
         return data_index
 
@@ -576,10 +616,20 @@ class BusinessObject:
         :return: The business object instance.
         """
         if bo_id is None and not self.meta.can_insert:
-            raise NuclosException("Insert of business object {} not allowed.".format(self.meta.name))
+            raise NuclosException(
+                "Insert of business object {} not allowed.".format(self.meta.name)
+            )
         return BusinessObjectInstance(self._nuclos, self, bo_id)
 
-    def list(self, search=None, offset=0, limit=0, sort=None, where=None, fetch_all=False):
+    def list(
+        self,
+        search=None,
+        offset=0,
+        limit=0,
+        sort=None,
+        where=None,
+        fetch_all=False,
+    ):
         """
         Get a result of instances for this business object.
 
@@ -623,7 +673,9 @@ class BusinessObject:
         result = []
 
         while True:
-            data = self._nuclos.request(BO_INSTANCE_LIST_ROUTE.format(self.bo_meta_id), parameters=parameters)
+            data = self._nuclos.request(
+                BO_INSTANCE_LIST_ROUTE.format(self.bo_meta_id), parameters=parameters
+            )
             result.extend([self.get(bo["boId"]) for bo in data["bos"]])
 
             if not fetch_all or data["all"]:
@@ -714,7 +766,9 @@ class BusinessObjectInstance:
     @property
     def _url(self):
         if not self._bo_id:
-            raise NuclosException("Attempting to access data of an uninitialized business object instance.")
+            raise NuclosException(
+                "Attempting to access data of an uninitialized business object instance."
+            )
         return BO_INSTANCE_ROUTE.format(self._business_object.bo_meta_id, self._bo_id)
 
     @property
@@ -728,7 +782,9 @@ class BusinessObjectInstance:
     @property
     def data(self):
         if not self._bo_id:
-            raise NuclosException("Attempting to access data of an uninitialized business object instance.")
+            raise NuclosException(
+                "Attempting to access data of an uninitialized business object instance."
+            )
         if self._deleted:
             raise NuclosException("Cannot access data of a deleted instance.")
         if not self._data:
@@ -762,13 +818,13 @@ class BusinessObjectInstance:
             # Older versions of the REST API include the state number in the JSON data.
             if "number" in state:
                 return state["number"]
-            
+
             # Newer versions don't contain it anymore. Try to extract the number from the ID.
             state_id = state["nuclosStateId"]
-            state_number = state_id[state_id.rindex("_") + 1:]
+            state_number = state_id[state_id.rindex("_") + 1 :]
             if state_number.isdigit():
                 return int(state_number)
-            
+
             return None
 
         for next_state in self.data["nextStates"]:
@@ -785,7 +841,9 @@ class BusinessObjectInstance:
         raise NuclosValueException("Unknown state '{}'.".format(name))
 
     def _change_to_state(self, state_id):
-        url = STATE_CHANGE_ROUTE.format(self._business_object.bo_meta_id, self.id, state_id)
+        url = STATE_CHANGE_ROUTE.format(
+            self._business_object.bo_meta_id, self.id, state_id
+        )
         self._nuclos.request(url, json_answer=False)
 
         self.refresh()
@@ -821,10 +879,7 @@ class BusinessObjectInstance:
     def set_process(self, name):
         process_id = self._business_object.bo_meta_id + "_" + name.replace(" ", "")
 
-        self._updated_attribute_data["nuclosProcess"] = {
-            "id": process_id,
-            "name": name
-        }
+        self._updated_attribute_data["nuclosProcess"] = {"id": process_id, "name": name}
 
     def is_new(self):
         return self._bo_id is None
@@ -847,7 +902,10 @@ class BusinessObjectInstance:
             raise NuclosException("Cannot delete an unsaved instance.")
         if not self._business_object.meta.can_delete:
             raise NuclosAuthenticationException(
-                "Deletion of business object {} not allowed.".format(self._business_object.meta.name))
+                "Deletion of business object {} not allowed.".format(
+                    self._business_object.meta.name
+                )
+            )
         try:
             self._nuclos.request(self._url, method="DELETE", json_answer=False)
             self._deleted = True
@@ -869,10 +927,17 @@ class BusinessObjectInstance:
             # Insert.
             if not self._business_object.meta.can_insert:
                 raise NuclosAuthenticationException(
-                    "Insert of business object {} not allowed.".format(self._business_object.meta.name))
+                    "Insert of business object {} not allowed.".format(
+                        self._business_object.meta.name
+                    )
+                )
             try:
-                url = BO_INSTANCE_LIST_ROUTE.format(self._business_object.meta.bo_meta_id)
-                result = self._nuclos.request(url, data=self._update_data(), method="POST")
+                url = BO_INSTANCE_LIST_ROUTE.format(
+                    self._business_object.meta.bo_meta_id
+                )
+                result = self._nuclos.request(
+                    url, data=self._update_data(), method="POST"
+                )
                 if result:
                     self._bo_id = result["boId"]
                     self._data = result
@@ -884,9 +949,14 @@ class BusinessObjectInstance:
             # Update.
             if not self._business_object.meta.can_update:
                 raise NuclosAuthenticationException(
-                    "Update of business object {} not allowed.".format(self._business_object.meta.name))
+                    "Update of business object {} not allowed.".format(
+                        self._business_object.meta.name
+                    )
+                )
             try:
-                result = self._nuclos.request(self._url, data=self._update_data(), method="PUT")
+                result = self._nuclos.request(
+                    self._url, data=self._update_data(), method="PUT"
+                )
                 if result:
                     self._data = result
                     self._updated_attribute_data = {}
@@ -901,7 +971,7 @@ class BusinessObjectInstance:
         """
         data = {
             "boMetaId": self._business_object.meta.bo_meta_id,
-            "attributes": self._updated_attribute_data
+            "attributes": self._updated_attribute_data,
         }
         if self.is_new():
             data["_flag"] = "insert"
@@ -938,8 +1008,12 @@ class BusinessObjectInstance:
 
     def _dependency_list_url(self, dependency_id):
         if not self._bo_id:
-            raise NuclosException("Attempting to access data of an uninitialized business object instance.")
-        return BO_DEPENDENCY_LIST_ROUTE.format(self.meta.bo_meta_id, self.id, dependency_id)
+            raise NuclosException(
+                "Attempting to access data of an uninitialized business object instance."
+            )
+        return BO_DEPENDENCY_LIST_ROUTE.format(
+            self.meta.bo_meta_id, self.id, dependency_id
+        )
 
     @property
     @Cached
@@ -1010,7 +1084,10 @@ class BusinessObjectInstance:
         dependency_bo = self._get_dependency_bo(dependency_id)
 
         refs = self._nuclos.request(self._dependency_list_url(dependency_id))
-        return [BusinessObjectInstance(self._nuclos, dependency_bo, bo["boId"]) for bo in refs["bos"]]
+        return [
+            BusinessObjectInstance(self._nuclos, dependency_bo, bo["boId"])
+            for bo in refs["bos"]
+        ]
 
     def get_dependencies_by_name(self, name):
         """
@@ -1075,6 +1152,7 @@ class BusinessObjectInstance:
         if name.startswith("create_"):
             cname = name[7:]
             if self._get_dependency_id_by_name(cname) is not None:
+
                 def create_dependency():
                     return self.create_dependency_by_name(cname)
 
@@ -1111,10 +1189,14 @@ class BusinessObjectInstance:
             raise AttributeError("Unknown attribute '{}'.".format(bo_attr_id))
 
         if not attr.is_writeable:
-            raise NuclosAuthenticationException("Attribute '{}' is not writeable.".format(attr.name))
+            raise NuclosAuthenticationException(
+                "Attribute '{}' is not writeable.".format(attr.name)
+            )
 
         if value is None and not attr.is_nullable:
-            raise NuclosAuthenticationException("Attribute '{}' is not nullable.".format(attr.name))
+            raise NuclosAuthenticationException(
+                "Attribute '{}' is not nullable.".format(attr.name)
+            )
 
         if attr.is_document:
             # The attribute is a file.
@@ -1128,25 +1210,29 @@ class BusinessObjectInstance:
 
                 value = {
                     "data": encoded_file,
-                    "name": os.path.basename(filename)
+                    "name": os.path.basename(filename),
                 }
         elif attr.is_reference:
             if value is None:
                 value = {
                     "id": None,
-                    "name": ""
+                    "name": "",
                 }
             else:
                 if not isinstance(value, BusinessObjectInstance):
-                    raise NuclosValueException("Wrong value for reference attribute '{}'.".format(attr.name))
+                    raise NuclosValueException(
+                        "Wrong value for reference attribute '{}'.".format(attr.name)
+                    )
                 if attr.referenced_bo().bo_meta_id != value._business_object.bo_meta_id:
                     raise NuclosValueException(
                         "Wrong value for reference attribute '{}', expected a business object of type '{}'.".format(
-                            attr.name, attr.referenced_bo().bo_meta_id))
+                            attr.name, attr.referenced_bo().bo_meta_id
+                        )
+                    )
 
                 value = {
                     "id": value.id,
-                    "name": value.title
+                    "name": value.title,
                 }
         elif attr.type == "String" and not isinstance(value, str):
             # Don't convert None to "None".
